@@ -1,0 +1,18 @@
+[
+  {
+    "id": "torneo_1",
+    "filename": "torneo_1.json",
+    "name": "Torneo Respeto #1",
+    "date": "2026-05-15",
+    "mode": "Equipos Random",
+    "game": "Dragon Ball FighterZ"
+  },
+  {
+    "id": "torneo_2",
+    "filename": "torneo_2.json",
+    "name": "Torneo Respeto #2",
+    "date": "2026-05-22",
+    "mode": "Individual 1v1",
+    "game": "Dragon Ball FighterZ"
+  }
+]

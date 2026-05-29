@@ -1,0 +1,82 @@
+{
+  "id": "torneo_2",
+  "name": "Torneo FighterZ #2",
+  "date": "2026-05-22",
+  "mode": "Equipos Random",
+  "game": "Dragon Ball FighterZ",
+  "participants": ["Diego", "Justhin", "Pedro", "Mantilla", "Oscar", "Darlyn", "Sebas"],
+  "matches": [
+    {
+      "round": "Cuartos",
+      "p1": "Justhin",
+      "p2": "Mantilla",
+      "score1": 2,
+      "score2": 0,
+      "chars1": "Vegito Blue, Nappa, Android 17",
+      "chars2": "Cell, Frieza, Majin Buu"
+    },
+    {
+      "round": "Cuartos",
+      "p1": "Pedro",
+      "p2": "Oscar",
+      "score1": 2,
+      "score2": 1,
+      "chars1": "SSJ4 Gogeta, Beerus, Yamcha",
+      "chars2": "Teen Gohan, Piccolo, Krillin"
+    },
+    {
+      "round": "Cuartos",
+      "p1": "Darlyn",
+      "p2": "Sebas",
+      "score1": 2,
+      "score2": 0,
+      "chars1": "Janemba, Cooler, Ginyu",
+      "chars2": "Hit, Jiren, Tien"
+    },
+    {
+      "round": "Semifinal",
+      "p1": "Diego",
+      "p2": "Justhin",
+      "score1": 1,
+      "score2": 2,
+      "chars1": "UI Goku, Gogeta Blue, Roshi",
+      "chars2": "Broly DBS, Kefla, Bardock"
+    },
+    {
+      "round": "Semifinal",
+      "p1": "Pedro",
+      "p2": "Darlyn",
+      "score1": 2,
+      "score2": 1,
+      "chars1": "Base Vegeta, Android 18, Trunks",
+      "chars2": "Zamasu Fusion, Baby, Super Baby 2"
+    },
+    {
+      "round": "Tercer Puesto",
+      "p1": "Diego",
+      "p2": "Darlyn",
+      "score1": 2,
+      "score2": 0,
+      "chars1": "Goku GT, Vegito Blue, Piccolo",
+      "chars2": "Android 21, Broly Z, Videl"
+    },
+    {
+      "round": "Final",
+      "p1": "Justhin",
+      "p2": "Pedro",
+      "score1": 3,
+      "score2": 2,
+      "chars1": "UI Goku, Hit, Base Goku",
+      "chars2": "Cooler, Cell, Beerus"
+    }
+  ],
+  "standings": [
+    {"rank": 1, "player": "Justhin"},
+    {"rank": 2, "player": "Pedro"},
+    {"rank": 3, "player": "Diego"},
+    {"rank": 4, "player": "Darlyn"},
+    {"rank": 5, "player": "Mantilla"},
+    {"rank": 6, "player": "Oscar"},
+    {"rank": 7, "player": "Sebas"}
+  ]
+}
