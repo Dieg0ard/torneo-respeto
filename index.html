@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Torneo del Respeto - Estadísticas y Resultados</title>
+  <meta name="description" content="Portal de estadísticas, clasificación histórica, enfrentamientos directos e historial del Torneo del Respeto de juegos de pelea.">
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Web application style sheet -->
+  <link rel="stylesheet" href="style.css">
+  
+  <!-- Inline theme-switch script to prevent FOUC (Flash of Unstyled Content) -->
+  <meta name="color-scheme" content="light dark">
+  <script>
+    {
+      const colorScheme = localStorage.getItem("color-scheme");
+      if (colorScheme) {
+        document.querySelector('meta[name="color-scheme"]').content = colorScheme;
+        document.documentElement.setAttribute('data-theme', colorScheme);
+      } else {
+        document.documentElement.setAttribute('data-theme', 'system');
+      }
+    }
+  </script>
+</head>
+<body>
+  
+  <!-- Main Grid Layout -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-color); flex-shrink: 0;"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34"/><path d="M12 2a6 6 0 0 0-6 6c0 3.2 2.5 5.8 5.7 6h.6c3.2-.2 5.7-2.8 5.7-6a6 6 0 0 0-6-6Z"/></svg>
+          <span class="logo-text">Torneo Respeto</span>
+        </div>
+        <button class="mobile-close" id="btn-close-sidebar" aria-label="Cerrar menú">✕</button>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <ul>
+          <li>
+            <button class="nav-item active" id="tab-overview" data-target="sec-overview">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-svg"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+              Resumen
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" id="tab-leaderboard" data-target="sec-leaderboard">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-svg"><line x1="10" x2="21" y1="6" y2="6"/><line x1="10" x2="21" y1="12" y2="12"/><line x1="10" x2="21" y1="18" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+              Clasificación
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" id="tab-h2h" data-target="sec-h2h">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-svg"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="M16 16h5v5"/><path d="M19 8V5h-3"/><path d="M16 5 5 16"/></svg>
+              Cara a Cara (H2H)
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" id="tab-tournaments" data-target="sec-tournaments">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-svg"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+              Torneos
+            </button>
+          </li>
+          <li>
+            <button class="nav-item" id="tab-palmares" data-target="sec-palmares">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-svg"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+              Palmarés
+            </button>
+          </li>
+          <li>
+            <button class="nav-item admin-nav" id="tab-admin" data-target="sec-admin">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-svg"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+              Administrar
+            </button>
+          </li>
+        </ul>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="theme-toggle-container">
+          <span class="theme-label">Tema</span>
+          <button class="theme-toggle-btn" id="btn-theme-toggle" aria-label="Cambiar tema">
+            <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            <svg class="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+    
+    <!-- Header & Main Content Area -->
+    <div class="main-layout">
+      <header class="app-header">
+        <div class="header-left">
+          <button class="mobile-open" id="btn-open-sidebar" aria-label="Abrir menú">☰</button>
+          <h1 id="page-title">Resumen del Torneo</h1>
+        </div>
+        <div class="header-right">
+          <div class="status-indicator">
+            <span class="status-dot"></span> Base de Datos Cargada
+          </div>
+        </div>
+      </header>
+      
+      <main class="app-main-content">
+        
+        <!-- SECTION: OVERVIEW -->
+        <section class="tab-section active" id="sec-overview">
+          <!-- Overview Cards Grid -->
+          <div class="dashboard-grid">
+            <div class="stat-card glass">
+              <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-svg"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+              </div>
+              <div class="stat-info">
+                <h3>Total Torneos</h3>
+                <p class="stat-value" id="stat-total-tournaments">-</p>
+              </div>
+            </div>
+            
+            <div class="stat-card glass">
+              <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-svg"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <div class="stat-info">
+                <h3>Jugadores Activos</h3>
+                <p class="stat-value" id="stat-total-players">-</p>
+              </div>
+            </div>
+            
+            <div class="stat-card glass">
+              <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-svg"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+              </div>
+              <div class="stat-info">
+                <h3>Líder Actual</h3>
+                <p class="stat-value" id="stat-leader-name">-</p>
+              </div>
+            </div>
+            
+            <div class="stat-card glass">
+              <div class="stat-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="stat-svg"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9"/><path d="m17 17 5 5"/><path d="m5 5 9 9"/></svg>
+              </div>
+              <div class="stat-info">
+                <h3>Combates Totales</h3>
+                <p class="stat-value" id="stat-total-matches">-</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="layout-grid-2">
+            <!-- Recent Tournament Detail -->
+            <div class="card glass" id="card-recent-tournament">
+              <div class="card-header">
+                <h2>Último Torneo Realizado</h2>
+                <span class="tag-mode" id="recent-tournament-mode">-</span>
+              </div>
+              <div class="card-body">
+                <div class="recent-meta">
+                  <div class="meta-item">
+                    <span class="meta-label">Fecha</span>
+                    <span class="meta-val" id="recent-tournament-date">-</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="meta-label">Juego</span>
+                    <span class="meta-val highlight" id="recent-tournament-game">-</span>
+                  </div>
+                  <div class="meta-item">
+                    <span class="meta-label">Campeón</span>
+                    <span class="meta-val highlight" id="recent-tournament-winner">-</span>
+                  </div>
+                </div>
+                <div class="recent-podium-preview">
+                  <h3>Podio</h3>
+                  <div class="podium-mini">
+                    <div class="podium-step step-2">
+                      <span class="podium-name" id="recent-podium-2">-</span>
+                      <div class="podium-block">2nd</div>
+                    </div>
+                    <div class="podium-step step-1">
+                      <span class="podium-name" id="recent-podium-1">-</span>
+                      <div class="podium-block">1st</div>
+                    </div>
+                    <div class="podium-step step-3">
+                      <span class="podium-name" id="recent-podium-3">-</span>
+                      <div class="podium-block">3rd</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Quick Leaderboard Summary -->
+            <div class="card glass">
+              <div class="card-header">
+                <h2>Clasificación Top 5</h2>
+                <button class="btn-link" id="link-to-leaderboard">Ver tabla completa →</button>
+              </div>
+              <div class="card-body">
+                <div class="table-container">
+                  <table class="simple-table" id="table-top-leaderboard">
+                    <thead>
+                      <tr>
+                        <th>Pos</th>
+                        <th>Jugador</th>
+                        <th>Puntos</th>
+                        <th>PG</th>
+                        <th>WR %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr><td colspan="5" class="text-center">Cargando clasificación...</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- SECTION: LEADERBOARD -->
+        <section class="tab-section" id="sec-leaderboard" hidden>
+          <div class="card glass">
+            <div class="card-header flex-header">
+              <h2>Clasificación Histórica de la Liga</h2>
+              <div class="header-filters">
+                <div class="select-box">
+                  <select id="select-leaderboard-game" aria-label="Filtrar por juego">
+                    <option value="all">Todos los juegos</option>
+                  </select>
+                </div>
+                <div class="search-box">
+                  <input type="text" id="input-search-leaderboard" placeholder="Buscar jugador...">
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <p class="description">Sistema de puntos: 1er puesto (10pts), 2do puesto (6pts), 3er puesto (4pts), Participar (1pt). Desempates por tasa de victorias y combates jugados.</p>
+              <div class="table-container">
+                <table class="interactive-table" id="table-full-leaderboard">
+                  <thead>
+                    <tr>
+                      <th data-sort="rank" class="sortable sorted-asc">Pos</th>
+                      <th data-sort="player" class="sortable">Jugador</th>
+                      <th data-sort="points" class="sortable">Puntos liga</th>
+                      <th data-sort="played" class="sortable">Jugados</th>
+                      <th data-sort="wins" class="sortable">Ganados</th>
+                      <th data-sort="losses" class="sortable">Perdidos</th>
+                      <th data-sort="winrate" class="sortable">Win Rate</th>
+                      <th data-sort="podiums" class="sortable">Podios (1º/2º/3º)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- JS fills this -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- SECTION: HEAD TO HEAD -->
+        <section class="tab-section" id="sec-h2h" hidden>
+          <div class="h2h-selectors-container glass">
+            <div class="h2h-selector">
+              <label for="select-h2h-p1">Jugador A</label>
+              <select id="select-h2h-p1">
+                <option value="" disabled selected>Selecciona jugador A</option>
+              </select>
+            </div>
+            <div class="h2h-vs">VS</div>
+            <div class="h2h-selector">
+              <label for="select-h2h-p2">Jugador B</label>
+              <select id="select-h2h-p2">
+                <option value="" disabled selected>Selecciona jugador B</option>
+              </select>
+            </div>
+          </div>
+          
+          <div id="h2h-results-placeholder" class="card glass text-center padding-xl">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="placeholder-svg" style="opacity: 0.4; margin-inline: auto; margin-block-end: 1rem;"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="M16 16h5v5"/><path d="M19 8V5h-3"/><path d="M16 5 5 16"/></svg>
+            <h3>Historial de Enfrentamientos Directos</h3>
+            <p class="description-small">Selecciona dos jugadores arriba para analizar su historial de combates, tasa de victorias mutua y personajes más jugados en sus duelos.</p>
+          </div>
+          
+          <div id="h2h-results" class="layout-grid-2" hidden>
+            <!-- Stats Comparison Card -->
+            <div class="card glass">
+              <div class="card-header">
+                <h2>Cara a Cara Estadístico</h2>
+              </div>
+              <div class="card-body">
+                <div class="h2h-head">
+                  <div class="h2h-side side-p1">
+                    <span class="h2h-player-name" id="h2h-name-p1">-</span>
+                    <span class="h2h-win-pct" id="h2h-pct-p1">0%</span>
+                  </div>
+                  <div class="h2h-central-stat">Tasa de victorias</div>
+                  <div class="h2h-side side-p2">
+                    <span class="h2h-player-name" id="h2h-name-p2">-</span>
+                    <span class="h2h-win-pct" id="h2h-pct-p2">0%</span>
+                  </div>
+                </div>
+                
+                <div class="h2h-bar-container">
+                  <div class="h2h-bar-fill" id="h2h-bar-fill-p1" style="width: 50%"></div>
+                  <div class="h2h-bar-fill" id="h2h-bar-fill-p2" style="width: 50%"></div>
+                </div>
+                
+                <div class="h2h-stats-list">
+                  <div class="h2h-stat-row">
+                    <span class="h2h-val val-p1" id="h2h-wins-p1">0</span>
+                    <span class="h2h-stat-label">Combates ganados</span>
+                    <span class="h2h-val val-p2" id="h2h-wins-p2">0</span>
+                  </div>
+                  <div class="h2h-stat-row">
+                    <span class="h2h-val val-p1" id="h2h-rounds-p1">0</span>
+                    <span class="h2h-stat-label">Rounds ganados</span>
+                    <span class="h2h-val val-p2" id="h2h-rounds-p2">0</span>
+                  </div>
+                  <div class="h2h-stat-row">
+                    <span class="h2h-val val-p1" id="h2h-main-char-p1">-</span>
+                    <span class="h2h-stat-label">Personaje preferido</span>
+                    <span class="h2h-val val-p2" id="h2h-main-char-p2">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Match list card -->
+            <div class="card glass">
+              <div class="card-header">
+                <h2>Historial de Combates</h2>
+              </div>
+              <div class="card-body scrollable-card-body">
+                <ul class="match-history-list" id="list-h2h-matches">
+                  <!-- Filled by JS -->
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- SECTION: TOURNAMENTS -->
+        <section class="tab-section" id="sec-tournaments" hidden>
+          <div class="layout-tournaments">
+            <!-- Sidebar list of tournaments -->
+            <div class="tournaments-list-card card glass">
+              <div class="card-header">
+                <h2>Historial de Torneos</h2>
+              </div>
+              <div class="card-body no-padding scrollable-card-body">
+                <div class="tournaments-list" id="list-tournaments-nav">
+                  <!-- Filled by JS -->
+                </div>
+              </div>
+            </div>
+            
+            <!-- Details view -->
+            <div class="tournament-details-card card glass" id="tournament-detail-view">
+              <div id="tournament-detail-placeholder" class="text-center padding-xl">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="placeholder-svg" style="opacity: 0.4; margin-inline: auto; margin-block-end: 1rem;"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                <h3>Detalle del Torneo</h3>
+                <p class="description-small">Selecciona un torneo de la lista izquierda para visualizar la fecha, participantes, combates realizados, personajes utilizados y la clasificación final.</p>
+              </div>
+              
+              <div id="tournament-detail-content" hidden>
+                <div class="detail-header">
+                  <div>
+                    <h2 id="det-tour-name">-</h2>
+                    <span class="det-tour-date" id="det-tour-date">-</span>
+                    <span class="det-tour-game-divider"> • </span>
+                    <span class="det-tour-game highlight" id="det-tour-game">-</span>
+                  </div>
+                  <span class="tag-mode" id="det-tour-mode">-</span>
+                </div>
+                
+                <div class="detail-tabs">
+                  <button class="det-tab-btn active" data-det-target="det-sec-matches">Combates</button>
+                  <button class="det-tab-btn" data-det-target="det-sec-standings">Posiciones finales</button>
+                  <button class="det-tab-btn" data-det-target="det-sec-participants">Participantes</button>
+                </div>
+                
+                <div class="detail-tab-content">
+                  <!-- Detail: Matches -->
+                  <div class="det-tab-section active" id="det-sec-matches">
+                    <div class="matches-flow-list" id="det-list-matches">
+                      <!-- Filled by JS -->
+                    </div>
+                  </div>
+                  
+                  <!-- Detail: Standings -->
+                  <div class="det-tab-section" id="det-sec-standings" hidden>
+                    <div class="table-container">
+                      <table class="simple-table" id="det-table-standings">
+                        <thead>
+                          <tr>
+                            <th>Posición</th>
+                            <th>Jugador</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <!-- Filled by JS -->
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  
+                  <!-- Detail: Participants -->
+                  <div class="det-tab-section" id="det-sec-participants" hidden>
+                    <ul class="participants-tags-list" id="det-list-participants">
+                      <!-- Filled by JS -->
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- SECTION: PALMARES -->
+        <section class="tab-section" id="sec-palmares" hidden>
+          <div class="card glass">
+            <div class="card-header">
+              <h2>Salón de la Fama y Campeones (Palmarés)</h2>
+            </div>
+            <div class="card-body">
+              <p class="description">Historial acumulado de victorias de los participantes del torneo.</p>
+              
+              <div class="palmares-summary-grid" id="palmares-summary">
+                <!-- JS builds this, showing podium counts for champions -->
+              </div>
+              
+              <h3 class="margin-top-xl">Historial de Títulos por Edición</h3>
+              <div class="palmares-timeline" id="palmares-timeline">
+                <!-- JS builds a timeline card list of tournaments -->
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- SECTION: ADMINISTRATOR (JSON GENERATOR) -->
+        <section class="tab-section" id="sec-admin" hidden>
+          <div class="layout-grid-2">
+            <!-- Generator Form -->
+            <div class="card glass">
+              <div class="card-header">
+                <h2>Generador de Torneos (Creador JSON)</h2>
+              </div>
+              <div class="card-body scrollable-card-body max-height-admin-form">
+                <form id="form-generate-tournament" onsubmit="return false;">
+                  
+                  <h3 class="form-section-title">1. Información del Torneo</h3>
+                  <div class="form-group">
+                    <label for="admin-tour-id">ID Único (ej: torneo_03)</label>
+                    <input type="text" id="admin-tour-id" required placeholder="torneo_03">
+                  </div>
+                  <div class="form-group">
+                    <label for="admin-tour-name">Nombre del Torneo</label>
+                    <input type="text" id="admin-tour-name" required placeholder="Torneo Respeto #3">
+                  </div>
+                  <div class="form-group">
+                    <label for="admin-tour-date">Fecha</label>
+                    <input type="date" id="admin-tour-date" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="admin-tour-mode">Modalidad</label>
+                    <select id="admin-tour-mode" required>
+                      <option value="Individual 1v1">Individual 1v1</option>
+                      <option value="Equipos Random">Equipos Random</option>
+                      <option value="Equipos Fijos">Equipos Fijos</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="admin-tour-game">Juego</label>
+                    <input type="text" id="admin-tour-game" required value="Dragon Ball FighterZ" placeholder="Dragon Ball FighterZ">
+                  </div>
+                  
+                  <h3 class="form-section-title">2. Lista de Participantes</h3>
+                  <div class="form-row-add">
+                    <input type="text" id="admin-player-input" placeholder="Nombre del jugador">
+                    <button type="button" class="btn-action" id="btn-admin-add-player">Añadir</button>
+                  </div>
+                  <div class="participants-box">
+                    <label>Participantes añadidos:</label>
+                    <div class="participants-tags" id="admin-participants-list">
+                      <!-- Tags of players appear here -->
+                    </div>
+                  </div>
+                  
+                  <h3 class="form-section-title">3. Registrar Combates</h3>
+                  <div class="match-form-box">
+                    <div class="form-group">
+                      <label for="admin-match-round">Ronda (ej: Semifinal, Final, Cuartos)</label>
+                      <input type="text" id="admin-match-round" placeholder="Semifinal">
+                    </div>
+                    
+                    <div class="match-players-grid">
+                      <div class="player-fields">
+                        <label for="admin-match-p1">Jugador 1</label>
+                        <select id="admin-match-p1">
+                          <!-- Filled by added players -->
+                        </select>
+                        <input type="text" id="admin-match-char1" placeholder="Personaje(s) (ej: Ryu)">
+                        <input type="text" id="admin-match-team1" placeholder="Equipo (opcional)">
+                      </div>
+                      <div class="score-fields">
+                        <label>Marcador</label>
+                        <div class="score-inputs">
+                          <input type="number" id="admin-match-score1" min="0" value="0">
+                          <span>-</span>
+                          <input type="number" id="admin-match-score2" min="0" value="0">
+                        </div>
+                      </div>
+                      <div class="player-fields">
+                        <label for="admin-match-p2">Jugador 2</label>
+                        <select id="admin-match-p2">
+                          <!-- Filled by added players -->
+                        </select>
+                        <input type="text" id="admin-match-char2" placeholder="Personaje(s) (ej: Ken)">
+                        <input type="text" id="admin-match-team2" placeholder="Equipo (opcional)">
+                      </div>
+                    </div>
+                    
+                    <button type="button" class="btn-secondary margin-top-sm" id="btn-admin-add-match">Añadir Combate</button>
+                  </div>
+                  
+                  <div class="added-matches-container">
+                    <label>Combates Registrados:</label>
+                    <ul class="admin-matches-list" id="admin-matches-list">
+                      <!-- Matches shown here with delete button -->
+                    </ul>
+                  </div>
+                  
+                  <h3 class="form-section-title">4. Podio / Posiciones Finales</h3>
+                  <p class="description-small">El orden en la lista determinará la posición final. El primero será 1º (Campeón), el segundo 2º, etc.</p>
+                  <div class="standings-ordering-list" id="admin-standings-list">
+                    <!-- List of players that can be ordered -->
+                  </div>
+                  
+                  <button type="button" class="btn-primary margin-top-md w-full" id="btn-admin-generate">Generar JSON de Torneo</button>
+                </form>
+              </div>
+            </div>
+            
+            <!-- Result Code -->
+            <div class="card glass">
+              <div class="card-header">
+                <h2>Archivo JSON Generado</h2>
+              </div>
+              <div class="card-body flex-column-layout">
+                <p class="description">Guarda este archivo en tu servidor. Sigue las instrucciones de abajo.</p>
+                <textarea id="admin-json-output" class="json-code-box" readonly placeholder='El código JSON de tu torneo se mostrará aquí cuando hagas clic en "Generar JSON de Torneo"...'></textarea>
+                
+                <div class="admin-actions-bar">
+                  <button type="button" class="btn-action" id="btn-admin-download" disabled>Descargar Archivo .json</button>
+                  <button type="button" class="btn-secondary" id="btn-admin-copy" disabled>Copiar Código</button>
+                </div>
+                
+                <div class="instructions-box margin-top-md">
+                  <h4>Instrucciones para Añadir el Torneo:</h4>
+                  <ol>
+                    <li>Haz clic en **Descargar Archivo .json** o copia el contenido y crea un archivo llamado <code id="admin-inst-filename">torneo_x.json</code>.</li>
+                    <li>Guárdalo en la carpeta <code class="code-path">data/tournaments/</code> del proyecto.</li>
+                    <li>Abre el archivo <code class="code-path">data/tournaments.json</code> y añade la siguiente entrada al array:</li>
+                  </ol>
+                  <pre class="json-code-box-small" id="admin-registry-output">// Haz clic en "Generar" para ver la entrada...</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+      </main>
+      
+      <footer class="app-footer">
+        <p>© 2026 Torneo del Respeto. Creado con pasión para la comunidad de Fighting Games. Presupuesto $0.</p>
+      </footer>
+    </div>
+  </div>
+  
+  <!-- JavaScript Application Entry -->
+  <script src="app.js" type="module"></script>
+</body>
+</html>
