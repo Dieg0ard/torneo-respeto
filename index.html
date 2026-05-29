@@ -58,6 +58,12 @@
             </button>
           </li>
           <li>
+            <button class="nav-item" id="tab-players" data-target="sec-players">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-svg"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              Participantes
+            </button>
+          </li>
+          <li>
             <button class="nav-item" id="tab-h2h" data-target="sec-h2h">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="nav-svg"><path d="M14.5 17.5 3 6V3h3l11.5 11.5"/><path d="m13 19 6-6"/><path d="M16 16h5v5"/><path d="M19 8V5h-3"/><path d="M16 5 5 16"/></svg>
               Cara a Cara (H2H)
@@ -267,6 +273,125 @@
           </div>
         </section>
         
+        <!-- SECTION: PARTICIPANTES -->
+        <section class="tab-section" id="sec-players" hidden>
+          <div class="layout-players">
+            <!-- Sidebar list of players -->
+            <div class="tournaments-list-card card glass">
+              <div class="card-header">
+                <h2>Buscar Participante</h2>
+                <div style="margin-block-start: var(--spacing-sm);">
+                  <input type="text" id="input-search-players" placeholder="Filtrar por nombre..." class="admin-input" style="width: 100%; box-sizing: border-box; padding: var(--spacing-sm);">
+                </div>
+              </div>
+              <div class="card-body no-padding scrollable-card-body">
+                <div class="tournaments-list" id="list-players-nav">
+                  <!-- Filled by JS -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Profile Details view -->
+            <div class="tournament-details-card card glass" id="player-detail-view">
+              <!-- Placeholder -->
+              <div id="player-detail-placeholder" class="text-center padding-xl">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="placeholder-svg" style="opacity: 0.4; margin-inline: auto; margin-block-end: 1rem;"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <h3>Perfil del Participante</h3>
+                <p class="description-small">Selecciona un participante de la lista izquierda para visualizar su récord completo, estadísticas de uso de personajes e historial de torneos.</p>
+              </div>
+
+              <!-- Detailed Content -->
+              <div id="player-detail-content" hidden>
+                <div class="detail-header-block">
+                  <div>
+                    <h2 id="det-player-name" style="margin-block-end: var(--spacing-xs);">-</h2>
+                    <div style="display: flex; gap: var(--spacing-sm); align-items: center;">
+                      <span class="player-record-badge" id="det-player-record">-</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label for="select-player-game" style="font-size: 0.85rem; color: var(--text-muted); margin-inline-end: var(--spacing-xs);">Filtrar Juego:</label>
+                    <select id="select-player-game" class="admin-standing-select" style="width: auto; padding: 4px 8px; font-size: 0.85rem;">
+                      <!-- Filled by JS -->
+                    </select>
+                  </div>
+                </div>
+
+                <div class="stats-grid">
+                  <div class="stat-card">
+                    <span class="stat-lbl">Tasa de Victorias</span>
+                    <span class="stat-val" id="det-player-winrate">0.0%</span>
+                  </div>
+                  <div class="stat-card">
+                    <span class="stat-lbl">Puntos de Liga</span>
+                    <span class="stat-val highlight" id="det-player-points">0</span>
+                  </div>
+                  <div class="stat-card">
+                    <span class="stat-lbl">Partidos Jugados</span>
+                    <span class="stat-val" id="det-player-played">0</span>
+                  </div>
+                </div>
+
+                <div class="profile-block">
+                  <h3 class="section-subtitle" style="border-block-end: 1px solid var(--border-color); padding-block-end: 6px; margin-block-end: var(--spacing-sm);">Podios Oficiales</h3>
+                  <div class="podium-medals-row">
+                    <div class="medal-item">
+                      <span class="medal-rank rank-gold">1º</span>
+                      <span class="medal-count" id="det-player-gold">0</span>
+                    </div>
+                    <div class="medal-item">
+                      <span class="medal-rank rank-silver">2º</span>
+                      <span class="medal-count" id="det-player-silver">0</span>
+                    </div>
+                    <div class="medal-item">
+                      <span class="medal-rank rank-bronze">3º</span>
+                      <span class="medal-count" id="det-player-bronze">0</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="profile-two-columns">
+                  <div class="profile-block">
+                    <h3 class="section-subtitle" style="border-block-end: 1px solid var(--border-color); padding-block-end: 6px; margin-block-end: var(--spacing-sm);">Equipos Favoritos</h3>
+                    <ul class="usage-list" id="det-player-teams">
+                      <!-- Filled by JS -->
+                    </ul>
+                  </div>
+                  <div class="profile-block">
+                    <h3 class="section-subtitle" style="border-block-end: 1px solid var(--border-color); padding-block-end: 6px; margin-block-end: var(--spacing-sm);">Personajes Favoritos</h3>
+                    <ul class="usage-list" id="det-player-chars">
+                      <!-- Filled by JS -->
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="profile-block" style="margin-block-start: var(--spacing-lg);">
+                  <h3 class="section-subtitle" style="border-block-end: 1px solid var(--border-color); padding-block-end: 6px; margin-block-end: var(--spacing-sm);">Historial de Torneos</h3>
+                  <div class="table-container">
+                    <table class="data-table" id="det-player-history-table">
+                      <thead>
+                        <tr>
+                          <th>Torneo</th>
+                          <th>Fecha</th>
+                          <th>Juego</th>
+                          <th>Modalidad</th>
+                          <th>Puesto</th>
+                          <th style="width: 80px;">Detalles</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <!-- Filled by JS -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </section>
+
         <!-- SECTION: HEAD TO HEAD -->
         <section class="tab-section" id="sec-h2h" hidden>
           <div class="h2h-selectors-container glass">
@@ -588,6 +713,6 @@
   </div>
   
   <!-- JavaScript Application Entry -->
-  <script src="app.js" type="module"></script>
+  <script src="js/app.js" type="module"></script>
 </body>
 </html>

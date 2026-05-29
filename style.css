@@ -1531,4 +1531,155 @@
   .rank-bronze {
     color: light-dark(#854d0e, #cd7f32);
   }
+
+  /* Players view layout */
+  .layout-players {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: var(--spacing-lg);
+    align-items: start;
+  }
+
+  .player-nav-btn {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md);
+    border-block-end: 1px solid var(--border-color);
+    width: 100%;
+    text-align: left;
+    transition: background-color var(--transition-speed);
+  }
+
+  .player-nav-btn:hover {
+    background-color: var(--border-color);
+  }
+
+  .player-nav-btn.active {
+    border-inline-start: 4px solid var(--accent-color);
+    background-color: rgba(var(--accent-color), 0.04);
+  }
+
+  .player-nav-record {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-block-start: var(--spacing-xs);
+  }
+
+  /* Player Profile detailed view */
+  #player-detail-content {
+    padding: var(--spacing-lg);
+  }
+
+  .detail-header-block {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-block-end: 1px solid var(--border-color);
+    padding-block-end: var(--spacing-md);
+    margin-block-end: var(--spacing-lg);
+  }
+
+  .player-record-badge {
+    background-color: var(--accent-color);
+    color: var(--surface-color);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.05em;
+  }
+
+  .profile-block {
+    margin-block-end: var(--spacing-lg);
+  }
+
+  .podium-medals-row {
+    display: flex;
+    gap: var(--spacing-md);
+    margin-block: var(--spacing-md);
+  }
+
+  .medal-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background-color: rgba(var(--text-color-rgb), 0.015);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+  }
+
+  .medal-rank {
+    font-weight: 800;
+    font-size: 1.3rem;
+    margin-block-end: var(--spacing-xs);
+  }
+
+  .medal-count {
+    font-size: 1.6rem;
+    font-weight: 700;
+  }
+
+  .profile-two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    margin-block: var(--spacing-lg);
+  }
+
+  .usage-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-block-start: var(--spacing-sm);
+  }
+
+  .usage-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .usage-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+  }
+
+  .usage-name {
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  .usage-count {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  .usage-bar-bg {
+    height: 8px;
+    background-color: var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .usage-bar-fill {
+    height: 100%;
+    background-color: var(--accent-color);
+    border-radius: 4px;
+    transition: width 0.4s ease-out;
+  }
+
+  @media (max-width: 900px) {
+    .layout-players {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .profile-two-columns {
+      grid-template-columns: 1fr;
+    }
+  }
 }

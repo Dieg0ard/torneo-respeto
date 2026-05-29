@@ -1,88 +1,11 @@
-// Application State
-const state = {
-  tournamentsMetadata: [], // loaded from data/tournaments.json
-  tournamentsDetails: [],  // loaded from data/tournaments/torneo_X.json
-  playersStats: {},        // computed player stats
-  activeTab: "sec-overview",
-  selectedTournamentId: null,
-  adminParticipants: [],
-  adminMatches: []
-};
+// User Interface Navigation and Rendering Module
+import { state } from './state.js';
+import { calculateStatistics, getH2HStats, getPalmaresMedals, formatDate, getPlayerDetailedStats } from './stats.js';
 
-// Initialize Application
-
-// Initialize Application
-document.addEventListener("DOMContentLoaded", () => {
-  initTheme();
-  setupNavigation();
-  setupEventListeners();
-  loadData();
-});
-
-// Theme Management
-function initTheme() {
-  const btn = document.getElementById("btn-theme-toggle");
-  const metaColorScheme = document.querySelector('meta[name="color-scheme"]');
-  
-  if (!btn) return;
-  
-  const updateThemeIcon = (theme) => {
-    const sun = btn.querySelector(".theme-icon-sun");
-    const moon = btn.querySelector(".theme-icon-moon");
-    if (!sun || !moon) return;
-    
-    if (theme === "dark") {
-      sun.style.display = "block";
-      moon.style.display = "none";
-    } else {
-      sun.style.display = "none";
-      moon.style.display = "block";
-    }
-  };
-  
-  // Set initial icon
-  const currentTheme = document.documentElement.getAttribute('data-theme') || 'system';
-  const systemIsDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const isDarkNow = currentTheme === 'dark' || (currentTheme === 'system' && systemIsDark);
-  updateThemeIcon(isDarkNow ? "dark" : "light");
-
-  // Toggle button event
-  btn.addEventListener("click", () => {
-    const html = document.documentElement;
-    const current = html.getAttribute('data-theme');
-    let nextTheme = "dark";
-    
-    if (current === "dark") {
-      nextTheme = "light";
-    } else if (current === "light") {
-      // If we go back to system, determine system preference
-      nextTheme = "system";
-    }
-    
-    html.setAttribute('data-theme', nextTheme);
-    
-    if (nextTheme === "system") {
-      localStorage.removeItem("color-scheme");
-      const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      metaColorScheme.content = "light dark";
-      updateThemeIcon(systemDark ? "dark" : "light");
-    } else {
-      localStorage.setItem("color-scheme", nextTheme);
-      metaColorScheme.content = nextTheme;
-      updateThemeIcon(nextTheme);
-    }
-  });
-
-  // Listen to system theme changes
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
-    if (document.documentElement.getAttribute('data-theme') === "system") {
-      updateThemeIcon(e.matches ? "dark" : "light");
-    }
-  });
-}
+let currentViewingPlayer = null;
 
 // Sidebar & Tab Navigation
-function setupNavigation() {
+export function setupNavigation() {
   const navButtons = document.querySelectorAll(".nav-item");
   const sections = document.querySelectorAll(".tab-section");
   const pageTitle = document.getElementById("page-title");
@@ -133,6 +56,8 @@ function setupNavigation() {
         renderLeaderboard();
       } else if (targetId === "sec-palmares") {
         renderPalmares();
+      } else if (targetId === "sec-players") {
+        renderPlayersView();
       }
     });
   });
@@ -146,8 +71,8 @@ function setupNavigation() {
   }
 }
 
-// Global Event Listeners (H2H, Leaderboard Search, Admin controls)
-function setupEventListeners() {
+// Global UI Event Listeners
+export function setupUIEventListeners() {
   // Head-to-Head dropdown change
   const selectP1 = document.getElementById("select-h2h-p1");
   const selectP2 = document.getElementById("select-h2h-p2");
@@ -167,7 +92,7 @@ function setupEventListeners() {
   // Leaderboard search filter
   const searchInput = document.getElementById("input-search-leaderboard");
   if (searchInput) {
-    searchInput.addEventListener("input", (e) => {
+    searchInput.addEventListener("input", () => {
       renderLeaderboard();
     });
   }
@@ -203,232 +128,27 @@ function setupEventListeners() {
     });
   });
 
-  // Admin Tools: Add Participant
-  const btnAddPlayer = document.getElementById("btn-admin-add-player");
-  const playerInput = document.getElementById("admin-player-input");
-  
-  if (btnAddPlayer && playerInput) {
-    const addPlayer = () => {
-      const name = playerInput.value.trim();
-      if (name && !state.adminParticipants.includes(name)) {
-        state.adminParticipants.push(name);
-        playerInput.value = "";
-        renderAdminParticipants();
-        updateAdminDropdowns();
-        renderAdminStandings();
-      }
-    };
-    btnAddPlayer.addEventListener("click", addPlayer);
-    playerInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") addPlayer();
+  // Players search filter
+  const playersSearchInput = document.getElementById("input-search-players");
+  if (playersSearchInput) {
+    playersSearchInput.addEventListener("input", () => {
+      renderPlayersView();
     });
   }
 
-  // Admin Tools: Add Match
-  const btnAddMatch = document.getElementById("btn-admin-add-match");
-  if (btnAddMatch) {
-    btnAddMatch.addEventListener("click", () => {
-      const round = document.getElementById("admin-match-round").value.trim() || "Ronda General";
-      const p1 = document.getElementById("admin-match-p1").value;
-      const p2 = document.getElementById("admin-match-p2").value;
-      const score1 = parseInt(document.getElementById("admin-match-score1").value) || 0;
-      const score2 = parseInt(document.getElementById("admin-match-score2").value) || 0;
-      const chars1 = document.getElementById("admin-match-char1").value.trim();
-      const chars2 = document.getElementById("admin-match-char2").value.trim();
-      const team1 = document.getElementById("admin-match-team1").value.trim();
-      const team2 = document.getElementById("admin-match-team2").value.trim();
-
-      if (!p1 || !p2) {
-        alert("Debes seleccionar ambos jugadores para registrar el combate.");
-        return;
-      }
-      if (p1 === p2) {
-        alert("Un jugador no puede pelear contra sí mismo.");
-        return;
-      }
-
-      const match = {
-        round,
-        p1,
-        p2,
-        score1,
-        score2,
-        chars1,
-        chars2
-      };
-
-      if (team1) match.team1 = team1;
-      if (team2) match.team2 = team2;
-
-      state.adminMatches.push(match);
-      
-      // Clean inputs
-      document.getElementById("admin-match-score1").value = "0";
-      document.getElementById("admin-match-score2").value = "0";
-      document.getElementById("admin-match-char1").value = "";
-      document.getElementById("admin-match-char2").value = "";
-      
-      renderAdminMatches();
-    });
-  }
-
-  // Admin Tools: Generate JSON
-  const btnGenerate = document.getElementById("btn-admin-generate");
-  if (btnGenerate) {
-    btnGenerate.addEventListener("click", generateTournamentJSON);
-  }
-
-  // Admin Tools: Copy code
-  const btnCopy = document.getElementById("btn-admin-copy");
-  if (btnCopy) {
-    btnCopy.addEventListener("click", () => {
-      const box = document.getElementById("admin-json-output");
-      box.select();
-      document.execCommand("copy");
-      
-      const origText = btnCopy.textContent;
-      btnCopy.textContent = "¡Copiado!";
-      setTimeout(() => btnCopy.textContent = origText, 2000);
-    });
-  }
-
-  // Admin Tools: Download JSON
-  const btnDownload = document.getElementById("btn-admin-download");
-  if (btnDownload) {
-    btnDownload.addEventListener("click", () => {
-      const id = document.getElementById("admin-tour-id").value.trim() || "torneo";
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(document.getElementById("admin-json-output").value);
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `${id}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
-    });
-  }
-}
-
-// Fetch files from local directory structure
-async function loadData() {
-  try {
-    const response = await fetch("data/tournaments.json");
-    if (!response.ok) throw new Error("No se pudo cargar data/tournaments.json");
-    
-    state.tournamentsMetadata = await response.json();
-    
-    // Sort metadata chronologically by date descending
-    state.tournamentsMetadata.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    // Fetch details of all tournaments in parallel
-    const detailsPromises = state.tournamentsMetadata.map(async (meta) => {
-      const res = await fetch(`data/tournaments/${meta.filename}`);
-      if (!res.ok) throw new Error(`No se pudo cargar el detalle del torneo: ${meta.filename}`);
-      return await res.json();
-    });
-
-    state.tournamentsDetails = await Promise.all(detailsPromises);
-    
-    // Calculate global stats
-    state.playersStats = calculateStatistics("all");
-    
-    // Populate Game Dropdown Filters
-    populateGameFilters();
-    
-    // Populate H2H selection lists
-    populateH2HSelectors();
-    
-    // Render views
-    renderOverview();
-    renderTournamentsView();
-    
-    // Setup date placeholder in administrator
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById("admin-tour-date").value = today;
-
-  } catch (error) {
-    console.error("Error al cargar los datos del torneo:", error);
-    document.querySelector(".status-indicator").innerHTML = `⚠️ Error al cargar datos`;
-    document.querySelector(".status-indicator").style.backgroundColor = "oklch(40% 0.15 20)";
-  }
-}
-
-// Compute Statistics (Leaderboard & League Stats)
-function calculateStatistics(gameFilter = "all") {
-  const stats = {};
-
-  // Process each player that participated
-  state.tournamentsDetails.forEach(tour => {
-    // Filter by game if specified
-    if (gameFilter !== "all" && (tour.game || "Dragon Ball FighterZ") !== gameFilter) {
-      return;
-    }
-
-    // Register players who joined
-    tour.participants.forEach(p => {
-      if (!stats[p]) {
-        stats[p] = {
-          name: p,
-          points: 0,
-          played: 0,
-          wins: 0,
-          losses: 0,
-          podiums: { gold: 0, silver: 0, bronze: 0 }
-        };
-      }
-      // 1 point for participating
-      stats[p].points += 1;
-    });
-
-    // Award podium points
-    if (tour.standings) {
-      tour.standings.forEach(stand => {
-        const p = stand.player;
-        if (stats[p]) {
-          if (stand.rank === 1) {
-            stats[p].points += 10;
-            stats[p].podiums.gold += 1;
-          } else if (stand.rank === 2) {
-            stats[p].points += 6;
-            stats[p].podiums.silver += 1;
-          } else if (stand.rank === 3) {
-            stats[p].points += 4;
-            stats[p].podiums.bronze += 1;
-          }
-        }
-      });
-    }
-
-    // Process individual matches for Win/Loss metrics
-    tour.matches.forEach(m => {
-      const p1 = m.p1;
-      const p2 = m.p2;
-
-      if (!stats[p1] || !stats[p2]) return;
-
-      stats[p1].played += 1;
-      stats[p2].played += 1;
-
-      if (m.score1 > m.score2) {
-        stats[p1].wins += 1;
-        stats[p2].losses += 1;
-      } else if (m.score2 > m.score1) {
-        stats[p2].wins += 1;
-        stats[p1].losses += 1;
+  // Player detailed view game filter
+  const playerGameSelect = document.getElementById("select-player-game");
+  if (playerGameSelect) {
+    playerGameSelect.addEventListener("change", () => {
+      if (currentViewingPlayer) {
+        showPlayerDetails(currentViewingPlayer);
       }
     });
-  });
-
-  // Calculate percentages
-  Object.keys(stats).forEach(p => {
-    const s = stats[p];
-    s.winrate = s.played > 0 ? (s.wins / s.played) * 100 : 0;
-  });
-
-  return stats;
+  }
 }
 
 // Populate Dropdowns in H2H
-function populateH2HSelectors() {
+export function populateH2HSelectors() {
   const selectP1 = document.getElementById("select-h2h-p1");
   const selectP2 = document.getElementById("select-h2h-p2");
   
@@ -454,7 +174,7 @@ function populateH2HSelectors() {
 }
 
 // Populate Leaderboard Game Filter options
-function populateGameFilters() {
+export function populateGameFilters() {
   const selectGame = document.getElementById("select-leaderboard-game");
   if (!selectGame) return;
 
@@ -472,7 +192,7 @@ function populateGameFilters() {
 }
 
 // RENDER: OVERVIEW
-function renderOverview() {
+export function renderOverview() {
   const totalTournaments = state.tournamentsMetadata.length;
   const totalPlayers = Object.keys(state.playersStats).length;
 
@@ -515,7 +235,6 @@ function renderOverview() {
 
   // Render details of the most recent tournament
   if (state.tournamentsDetails.length > 0) {
-    // Sort details chronologically
     const sortedDetails = [...state.tournamentsDetails].sort((a, b) => new Date(b.date) - new Date(a.date));
     const recent = sortedDetails[0];
 
@@ -546,7 +265,7 @@ function renderOverview() {
 }
 
 // RENDER: LEADERBOARD
-function renderLeaderboard() {
+export function renderLeaderboard() {
   const tbody = document.querySelector("#table-full-leaderboard tbody");
   if (!tbody) return;
 
@@ -563,7 +282,7 @@ function renderLeaderboard() {
     list = list.filter(p => p.name.toLowerCase().includes(textLower));
   }
 
-  // Initial Sort: By Points (Desc), then by Winrate (Desc), then by Played (Desc)
+  // Sort: By Points (Desc), then by Winrate (Desc), then by Played (Desc)
   list.sort((a, b) => b.points - a.points || b.winrate - a.winrate || b.played - a.played);
 
   tbody.innerHTML = "";
@@ -574,6 +293,7 @@ function renderLeaderboard() {
 
   list.forEach((p, idx) => {
     const tr = document.createElement("tr");
+    // Removed emojis here - replaced with text description
     tr.innerHTML = `
       <td><strong>#${idx + 1}</strong></td>
       <td><strong>${p.name}</strong></td>
@@ -582,14 +302,14 @@ function renderLeaderboard() {
       <td>${p.wins}</td>
       <td>${p.losses}</td>
       <td>${p.winrate.toFixed(1)}%</td>
-      <td>🥇 ${p.podiums.gold} | 🥈 ${p.podiums.silver} | 🥉 ${p.podiums.bronze}</td>
+      <td>1º: ${p.podiums.gold} | 2º: ${p.podiums.silver} | 3º: ${p.podiums.bronze}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
 // Leaderboard Sort Trigger
-function sortLeaderboardTable(field, asc) {
+export function sortLeaderboardTable(field, asc) {
   const tbody = document.querySelector("#table-full-leaderboard tbody");
   if (!tbody) return;
 
@@ -602,7 +322,6 @@ function sortLeaderboardTable(field, asc) {
     
     switch (field) {
       case "rank":
-        // Sort rank translates to default order by points descending
         valA = a.points;
         valB = b.points;
         break;
@@ -631,7 +350,6 @@ function sortLeaderboardTable(field, asc) {
         valB = b.winrate;
         break;
       case "podiums":
-        // Calculate weighted podium score for sorting
         valA = (a.podiums.gold * 3) + (a.podiums.silver * 2) + a.podiums.bronze;
         valB = (b.podiums.gold * 3) + (b.podiums.silver * 2) + b.podiums.bronze;
         break;
@@ -648,13 +366,14 @@ function sortLeaderboardTable(field, asc) {
   list.sort(compare);
 
   tbody.innerHTML = "";
-  list.forEach((p, idx) => {
+  list.forEach((p) => {
     // Retrieve correct absolute rank based on sorted overall stats
     const listForRanking = Object.values(stats);
     listForRanking.sort((x, y) => y.points - x.points || y.winrate - x.winrate);
     const originalRank = listForRanking.findIndex(x => x.name === p.name) + 1;
 
     const tr = document.createElement("tr");
+    // Removed emojis here
     tr.innerHTML = `
       <td><strong>#${originalRank}</strong></td>
       <td><strong>${p.name}</strong></td>
@@ -663,14 +382,14 @@ function sortLeaderboardTable(field, asc) {
       <td>${p.wins}</td>
       <td>${p.losses}</td>
       <td>${p.winrate.toFixed(1)}%</td>
-      <td>🥇 ${p.podiums.gold} | 🥈 ${p.podiums.silver} | 🥉 ${p.podiums.bronze}</td>
+      <td>1º: ${p.podiums.gold} | 2º: ${p.podiums.silver} | 3º: ${p.podiums.bronze}</td>
     `;
     tbody.appendChild(tr);
   });
 }
 
 // RENDER: HEAD TO HEAD
-function calculateAndRenderH2H(playerA, playerB) {
+export function calculateAndRenderH2H(playerA, playerB) {
   const placeholder = document.getElementById("h2h-results-placeholder");
   const results = document.getElementById("h2h-results");
   
@@ -679,79 +398,19 @@ function calculateAndRenderH2H(playerA, playerB) {
   placeholder.hidden = true;
   results.hidden = false;
 
-  // Stats Counters
-  let matchWinsA = 0;
-  let matchWinsB = 0;
-  let roundWinsA = 0;
-  let roundWinsB = 0;
-  
-  const charsUsedA = {};
-  const charsUsedB = {};
-  
-  const mutualMatches = [];
-
-  // Filter matches where they played against each other
-  state.tournamentsDetails.forEach(tour => {
-    tour.matches.forEach(m => {
-      const isMatch = (m.p1 === playerA && m.p2 === playerB) || (m.p1 === playerB && m.p2 === playerA);
-      if (!isMatch) return;
-
-      const dateStr = tour.date;
-      const tourName = tour.name;
-
-      let winner, scoreA, scoreB, charA, charB;
-
-      if (m.p1 === playerA) {
-        scoreA = m.score1;
-        scoreB = m.score2;
-        charA = m.chars1 || "-";
-        charB = m.chars2 || "-";
-      } else {
-        scoreA = m.score2;
-        scoreB = m.score1;
-        charA = m.chars2 || "-";
-        charB = m.chars1 || "-";
-      }
-
-      if (scoreA > scoreB) {
-        winner = playerA;
-        matchWinsA++;
-      } else if (scoreB > scoreA) {
-        winner = playerB;
-        matchWinsB++;
-      }
-
-      roundWinsA += scoreA;
-      roundWinsB += scoreB;
-
-      // Track character usage
-      if (charA && charA !== "-") charsUsedA[charA] = (charsUsedA[charA] || 0) + 1;
-      if (charB && charB !== "-") charsUsedB[charB] = (charsUsedB[charB] || 0) + 1;
-
-      mutualMatches.push({
-        date: dateStr,
-        tournamentName: tourName,
-        round: m.round,
-        charA,
-        charB,
-        scoreA,
-        scoreB,
-        winner
-      });
-    });
-  });
+  const h2h = getH2HStats(playerA, playerB);
 
   // Render Stats Grid
   document.getElementById("h2h-name-p1").textContent = playerA;
   document.getElementById("h2h-name-p2").textContent = playerB;
 
-  const totalMutualMatches = mutualMatches.length;
+  const totalMutualMatches = h2h.mutualMatches.length;
   let pctA = 50;
   let pctB = 50;
 
   if (totalMutualMatches > 0) {
-    pctA = (matchWinsA / totalMutualMatches) * 100;
-    pctB = (matchWinsB / totalMutualMatches) * 100;
+    pctA = (h2h.matchWinsA / totalMutualMatches) * 100;
+    pctB = (h2h.matchWinsB / totalMutualMatches) * 100;
   }
 
   document.getElementById("h2h-pct-p1").textContent = `${pctA.toFixed(0)}%`;
@@ -761,11 +420,11 @@ function calculateAndRenderH2H(playerA, playerB) {
   document.getElementById("h2h-bar-fill-p1").style.width = `${pctA}%`;
   document.getElementById("h2h-bar-fill-p2").style.width = `${pctB}%`;
 
-  document.getElementById("h2h-wins-p1").textContent = matchWinsA;
-  document.getElementById("h2h-wins-p2").textContent = matchWinsB;
+  document.getElementById("h2h-wins-p1").textContent = h2h.matchWinsA;
+  document.getElementById("h2h-wins-p2").textContent = h2h.matchWinsB;
 
-  document.getElementById("h2h-rounds-p1").textContent = roundWinsA;
-  document.getElementById("h2h-rounds-p2").textContent = roundWinsB;
+  document.getElementById("h2h-rounds-p1").textContent = h2h.roundWinsA;
+  document.getElementById("h2h-rounds-p2").textContent = h2h.roundWinsB;
 
   // Favorite character calculation
   const getFavoriteChar = (charsObj) => {
@@ -780,34 +439,26 @@ function calculateAndRenderH2H(playerA, playerB) {
     return fav;
   };
 
-  const favA = getFavoriteChar(charsUsedA);
-  const favB = getFavoriteChar(charsUsedB);
-  
-  // Character visual decorator
-  const getCharDecorator = (charName) => {
-    return charName;
-  };
+  const favA = getFavoriteChar(h2h.charsUsedA);
+  const favB = getFavoriteChar(h2h.charsUsedB);
 
-  document.getElementById("h2h-main-char-p1").textContent = favA !== "-" ? getCharDecorator(favA) : "-";
-  document.getElementById("h2h-main-char-p2").textContent = favB !== "-" ? getCharDecorator(favB) : "-";
+  document.getElementById("h2h-main-char-p1").textContent = favA;
+  document.getElementById("h2h-main-char-p2").textContent = favB;
 
   // Render match history list
   const listMatches = document.getElementById("list-h2h-matches");
   listMatches.innerHTML = "";
 
-  if (mutualMatches.length === 0) {
+  if (h2h.mutualMatches.length === 0) {
     listMatches.innerHTML = `<li class="text-center padding-md description-small">No hay registros de combates directos entre estos jugadores.</li>`;
   } else {
     // Sort matches newest first
-    mutualMatches.sort((x, y) => new Date(y.date) - new Date(x.date));
+    const sortedMatches = [...h2h.mutualMatches].sort((x, y) => new Date(y.date) - new Date(x.date));
 
-    mutualMatches.forEach(m => {
+    sortedMatches.forEach(m => {
       const li = document.createElement("li");
       li.className = "h2h-match-item";
       
-      const charDecoratedA = getCharDecorator(m.charA);
-      const charDecoratedB = getCharDecorator(m.charB);
-
       li.innerHTML = `
         <div class="h2h-match-top">
           <span>${formatDate(m.date)} - ${m.tournamentName}</span>
@@ -816,7 +467,7 @@ function calculateAndRenderH2H(playerA, playerB) {
         <div class="h2h-match-body">
           <div class="h2h-match-p ${m.winner === playerA ? 'highlight' : ''}">
             <strong>${playerA}</strong>
-            <span class="description-small">${charDecoratedA}</span>
+            <span class="description-small">${m.charA}</span>
           </div>
           <div class="h2h-match-score">
             <span class="${m.winner === playerA ? 'score-winner' : ''}">${m.scoreA}</span>
@@ -825,7 +476,7 @@ function calculateAndRenderH2H(playerA, playerB) {
           </div>
           <div class="h2h-match-p align-right ${m.winner === playerB ? 'highlight' : ''}">
             <strong>${playerB}</strong>
-            <span class="description-small">${charDecoratedB}</span>
+            <span class="description-small">${m.charB}</span>
           </div>
         </div>
       `;
@@ -835,7 +486,7 @@ function calculateAndRenderH2H(playerA, playerB) {
 }
 
 // RENDER: TOURNAMENTS DETAIL & LIST
-function renderTournamentsView() {
+export function renderTournamentsView() {
   const navContainer = document.getElementById("list-tournaments-nav");
   if (!navContainer) return;
 
@@ -893,7 +544,7 @@ function renderTournamentsView() {
   });
 }
 
-function showTournamentDetails(tournamentId) {
+export function showTournamentDetails(tournamentId) {
   const placeholder = document.getElementById("tournament-detail-placeholder");
   const content = document.getElementById("tournament-detail-content");
   
@@ -965,11 +616,6 @@ function showTournamentDetails(tournamentId) {
   const matchesContainer = document.getElementById("det-list-matches");
   matchesContainer.innerHTML = "";
   
-  // Character visual decorator
-  const getCharDecorator = (charName) => {
-    return charName;
-  };
-
   if (detail.matches && detail.matches.length > 0) {
     let currentRound = "";
 
@@ -985,9 +631,6 @@ function showTournamentDetails(tournamentId) {
       const p1Winner = m.score1 > m.score2;
       const p2Winner = m.score2 > m.score1;
 
-      const charDecorated1 = getCharDecorator(m.chars1 || "-");
-      const charDecorated2 = getCharDecorator(m.chars2 || "-");
-
       const t1Markup = m.team1 ? `<span class="match-p-team">${m.team1}</span>` : "";
       const t2Markup = m.team2 ? `<span class="match-p-team">${m.team2}</span>` : "";
 
@@ -995,7 +638,7 @@ function showTournamentDetails(tournamentId) {
         ${showRoundTag ? `<div class="match-round-tag">${m.round}</div>` : ''}
         <div class="match-p-box ${p1Winner ? 'highlight' : ''}">
           <span class="match-p-name">${m.p1}</span>
-          <span class="match-p-char">${charDecorated1}</span>
+          <span class="match-p-char">${m.chars1 || "-"}</span>
           ${t1Markup}
         </div>
         <div class="match-score-box">
@@ -1005,7 +648,7 @@ function showTournamentDetails(tournamentId) {
         </div>
         <div class="match-p-box align-right ${p2Winner ? 'highlight' : ''}">
           <span class="match-p-name">${m.p2}</span>
-          <span class="match-p-char">${charDecorated2}</span>
+          <span class="match-p-char">${m.chars2 || "-"}</span>
           ${t2Markup}
         </div>
       `;
@@ -1017,39 +660,19 @@ function showTournamentDetails(tournamentId) {
 }
 
 // RENDER: PALMARES (Hall of Fame)
-function renderPalmares() {
+export function renderPalmares() {
   const summaryContainer = document.getElementById("palmares-summary");
   const timelineContainer = document.getElementById("palmares-timeline");
   
   if (!summaryContainer || !timelineContainer) return;
 
-  // Calculate medals
-  const playerMedals = {};
-  
-  state.tournamentsDetails.forEach(tour => {
-    if (tour.standings) {
-      tour.standings.forEach(s => {
-        const p = s.player;
-        if (!playerMedals[p]) {
-          playerMedals[p] = { name: p, gold: 0, silver: 0, bronze: 0 };
-        }
-        if (s.rank === 1) playerMedals[p].gold++;
-        else if (s.rank === 2) playerMedals[p].silver++;
-        else if (s.rank === 3) playerMedals[p].bronze++;
-      });
-    }
-  });
-
-  const medalsList = Object.values(playerMedals);
-  // Sort by Gold (Desc), then Silver (Desc), then Bronze (Desc)
-  medalsList.sort((a, b) => b.gold - a.gold || b.silver - a.silver || b.bronze - a.bronze);
+  const medalsList = getPalmaresMedals();
 
   // Render Summary Cards (Champions Leaderboard)
   summaryContainer.innerHTML = "";
   if (medalsList.length === 0) {
     summaryContainer.innerHTML = `<p class="text-center padding-md">No hay podios registrados.</p>`;
   } else {
-    // Show only players with at least one medal
     const medalWinners = medalsList.filter(m => m.gold > 0 || m.silver > 0 || m.bronze > 0);
     
     medalWinners.forEach((m, idx) => {
@@ -1118,206 +741,192 @@ function renderPalmares() {
   }
 }
 
-// ADMIN TOOLS: Update participant tags UI
-function renderAdminParticipants() {
-  const container = document.getElementById("admin-participants-list");
-  if (!container) return;
+// RENDER: PLAYERS (LIST VIEW)
+export function renderPlayersView() {
+  const navContainer = document.getElementById("list-players-nav");
+  if (!navContainer) return;
 
-  container.innerHTML = "";
-  state.adminParticipants.forEach((p, idx) => {
-    const span = document.createElement("span");
-    span.className = "tag-player-admin";
-    span.innerHTML = `
-      ${p} <span class="btn-remove-tag" data-idx="${idx}">✕</span>
-    `;
-    
-    span.querySelector(".btn-remove-tag").addEventListener("click", () => {
-      state.adminParticipants.splice(idx, 1);
-      renderAdminParticipants();
-      updateAdminDropdowns();
-      renderAdminStandings();
-    });
+  const filterText = document.getElementById("input-search-players")?.value.trim().toLowerCase() || "";
+  navContainer.innerHTML = "";
 
-    container.appendChild(span);
-  });
-}
+  const players = Object.keys(state.playersStats).sort();
+  const filteredPlayers = players.filter(p => p.toLowerCase().includes(filterText));
 
-// ADMIN TOOLS: Update match builder player options
-function updateAdminDropdowns() {
-  const p1Select = document.getElementById("admin-match-p1");
-  const p2Select = document.getElementById("admin-match-p2");
-  
-  if (!p1Select || !p2Select) return;
-
-  p1Select.innerHTML = `<option value="" disabled selected>Escoge Jugador 1</option>`;
-  p2Select.innerHTML = `<option value="" disabled selected>Escoge Jugador 2</option>`;
-
-  state.adminParticipants.forEach(p => {
-    const opt1 = document.createElement("option");
-    opt1.value = p;
-    opt1.textContent = p;
-    p1Select.appendChild(opt1);
-
-    const opt2 = document.createElement("option");
-    opt2.value = p;
-    opt2.textContent = p;
-    p2Select.appendChild(opt2);
-  });
-}
-
-// ADMIN TOOLS: Render currently registered matches
-function renderAdminMatches() {
-  const list = document.getElementById("admin-matches-list");
-  if (!list) return;
-
-  list.innerHTML = "";
-  state.adminMatches.forEach((m, idx) => {
-    const li = document.createElement("li");
-    li.className = "admin-match-item";
-    
-    const charsMarkup = (m.chars1 || m.chars2) ? ` (${m.chars1 || '-'} vs ${m.chars2 || '-'})` : "";
-    const teamMarkup = (m.team1 || m.team2) ? ` [${m.team1 || '-'} vs ${m.team2 || '-'}]` : "";
-
-    li.innerHTML = `
-      <span>[${m.round}] <strong>${m.p1}</strong> ${m.score1} - ${m.score2} <strong>${m.p2}</strong>${charsMarkup}${teamMarkup}</span>
-      <button type="button" class="btn-remove-tag" style="padding: 2px 6px;">✕</button>
-    `;
-
-    li.querySelector("button").addEventListener("click", () => {
-      state.adminMatches.splice(idx, 1);
-      renderAdminMatches();
-    });
-
-    list.appendChild(li);
-  });
-}
-
-// ADMIN TOOLS: Generate standings dynamic controls based on player list
-function renderAdminStandings() {
-  const container = document.getElementById("admin-standings-list");
-  if (!container) return;
-
-  container.innerHTML = "";
-  
-  // We only need top 3 positions officially
-  const count = Math.min(3, state.adminParticipants.length);
-  
-  for (let i = 1; i <= count; i++) {
-    const div = document.createElement("div");
-    div.className = "standing-item-input";
-    
-    let selectOptions = `<option value="" disabled selected>Selecciona jugador para el podio</option>`;
-    state.adminParticipants.forEach(p => {
-      selectOptions += `<option value="${p}">${p}</option>`;
-    });
-
-    const labels = ["1º (Campeón)", "2º (Subcampeón)", "3º Lugar"];
-
-    div.innerHTML = `
-      <span class="standing-rank-lbl" style="width: 125px; text-align: left;">${labels[i-1]}:</span>
-      <select class="admin-standing-select" data-rank="${i}">
-        ${selectOptions}
-      </select>
-    `;
-    
-    container.appendChild(div);
-  }
-}
-
-// ADMIN TOOLS: Validate and Generate JSON string output
-function generateTournamentJSON() {
-  const id = document.getElementById("admin-tour-id").value.trim();
-  const name = document.getElementById("admin-tour-name").value.trim();
-  const date = document.getElementById("admin-tour-date").value;
-  const mode = document.getElementById("admin-tour-mode").value;
-  const game = document.getElementById("admin-tour-game").value.trim();
-
-  if (!id || !name || !date || !mode || !game) {
-    alert("Por favor, rellena los campos básicos del torneo (ID, Nombre, Fecha, Modalidad y Juego).");
+  if (filteredPlayers.length === 0) {
+    navContainer.innerHTML = `<p class="text-center padding-md description-small">No se encontraron participantes.</p>`;
     return;
   }
 
-  if (state.adminParticipants.length === 0) {
-    alert("Debes añadir al menos un participante.");
-    return;
-  }
+  filteredPlayers.forEach(name => {
+    const btn = document.createElement("button");
+    btn.className = "player-nav-btn";
+    btn.setAttribute("data-player-id", name);
 
-  // Parse standings
-  const standingsSelects = document.querySelectorAll(".admin-standing-select");
-  const standings = [];
-  const selectedStandings = new Set();
-  let standingsError = false;
-
-  standingsSelects.forEach(select => {
-    const rank = parseInt(select.getAttribute("data-rank"));
-    const player = select.value;
-    
-    if (!player) {
-      // Not filled
-      return;
+    // Get current active player ID to maintain highlighting
+    if (currentViewingPlayer === name) {
+      btn.classList.add("active");
     }
 
-    if (selectedStandings.has(player)) {
-      alert(`Jugador repetido en posiciones de podio: ${player}`);
-      standingsError = true;
-      return;
-    }
+    const stats = state.playersStats[name];
+    const recordText = stats ? `${stats.wins}-${stats.losses}` : "0-0";
 
-    selectedStandings.add(player);
-    standings.push({ rank, player });
+    btn.innerHTML = `
+      <span class="tour-nav-name">${name}</span>
+      <span class="player-nav-record">Récord general: ${recordText}</span>
+    `;
+
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".player-nav-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      
+      showPlayerDetails(name);
+    });
+
+    navContainer.appendChild(btn);
   });
-
-  if (standingsError) return;
-
-  // Construct Final Object
-  const tournamentObj = {
-    id,
-    name,
-    date,
-    mode,
-    game,
-    participants: [...state.adminParticipants],
-    matches: [...state.adminMatches],
-    standings
-  };
-
-  // Stringify with pretty printing indentation
-  const jsonOutput = JSON.stringify(tournamentObj, null, 2);
-  
-  // Update Outputs
-  document.getElementById("admin-json-output").value = jsonOutput;
-  document.getElementById("admin-inst-filename").textContent = `${id}.json`;
-  
-  // Generate metadata entry output
-  const metaObj = {
-    id,
-    filename: `${id}.json`,
-    name,
-    date,
-    mode,
-    game
-  };
-  
-  // Format the snippet to add to index registry
-  const registrySnippet = JSON.stringify(metaObj, null, 2);
-  document.getElementById("admin-registry-output").textContent = registrySnippet;
-
-  // Enable buttons
-  document.getElementById("btn-admin-download").disabled = false;
-  document.getElementById("btn-admin-copy").disabled = false;
 }
 
-// Utility: Format Date string to Spanish
-function formatDate(dateString) {
-  if (!dateString) return "-";
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return dateString;
+// Populate games selection inside player profiles view
+export function populatePlayerGameFilter() {
+  const select = document.getElementById("select-player-game");
+  if (!select) return;
 
-  // Keep it safe for browser zones
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-  const monthName = months[date.getUTCMonth()];
-  const year = date.getUTCFullYear();
+  select.innerHTML = `<option value="all">Todos los juegos</option>`;
+  const uniqueGames = [...new Set(state.tournamentsDetails.map(t => t.game || "Dragon Ball FighterZ"))].sort();
+  uniqueGames.forEach(g => {
+    const opt = document.createElement("option");
+    opt.value = g;
+    opt.textContent = g;
+    select.appendChild(opt);
+  });
+}
 
-  return `${day} ${monthName} ${year}`;
+// RENDER: PLAYER DETAILS PROFILE
+export function showPlayerDetails(playerName) {
+  currentViewingPlayer = playerName;
+  
+  const placeholder = document.getElementById("player-detail-placeholder");
+  const content = document.getElementById("player-detail-content");
+  if (!placeholder || !content) return;
+
+  placeholder.hidden = true;
+  content.hidden = false;
+
+  const gameFilter = document.getElementById("select-player-game")?.value || "all";
+  const stats = getPlayerDetailedStats(playerName, gameFilter);
+
+  // Update headers
+  document.getElementById("det-player-name").textContent = stats.playerName;
+  document.getElementById("det-player-record").textContent = `${stats.wins} - ${stats.losses}`;
+
+  // Update counts
+  document.getElementById("det-player-winrate").textContent = `${stats.winrate.toFixed(1)}%`;
+  document.getElementById("det-player-played").textContent = stats.played;
+
+  // Retrieve league points for this game filter
+  const gameStats = calculateStatistics(gameFilter);
+  const points = gameStats[playerName]?.points || 0;
+  document.getElementById("det-player-points").textContent = points;
+
+  // Render podiun counts
+  document.getElementById("det-player-gold").textContent = stats.podiums.gold;
+  document.getElementById("det-player-silver").textContent = stats.podiums.silver;
+  document.getElementById("det-player-bronze").textContent = stats.podiums.bronze;
+
+  // Render Favorite Teams (character compositions)
+  const teamsContainer = document.getElementById("det-player-teams");
+  teamsContainer.innerHTML = "";
+  if (stats.teamsList.length === 0) {
+    teamsContainer.innerHTML = `<li class="text-center padding-md description-small">No hay combates registrados</li>`;
+  } else {
+    const maxCount = stats.teamsList[0].count;
+    stats.teamsList.slice(0, 5).forEach(t => {
+      const pct = maxCount > 0 ? (t.count / maxCount) * 100 : 0;
+      const li = document.createElement("li");
+      li.className = "usage-item";
+      li.innerHTML = `
+        <div class="usage-info">
+          <span class="usage-name">${t.name}</span>
+          <span class="usage-count">${t.count} ${t.count === 1 ? 'pelea' : 'peleas'}</span>
+        </div>
+        <div class="usage-bar-bg">
+          <div class="usage-bar-fill" style="width: ${pct}%;"></div>
+        </div>
+      `;
+      teamsContainer.appendChild(li);
+    });
+  }
+
+  // Render Favorite Characters (individual)
+  const charsContainer = document.getElementById("det-player-chars");
+  charsContainer.innerHTML = "";
+  if (stats.charsList.length === 0) {
+    charsContainer.innerHTML = `<li class="text-center padding-md description-small">No hay combates registrados</li>`;
+  } else {
+    const maxCount = stats.charsList[0].count;
+    stats.charsList.slice(0, 5).forEach(c => {
+      const pct = maxCount > 0 ? (c.count / maxCount) * 100 : 0;
+      const li = document.createElement("li");
+      li.className = "usage-item";
+      li.innerHTML = `
+        <div class="usage-info">
+          <span class="usage-name">${c.name}</span>
+          <span class="usage-count">${c.count} ${c.count === 1 ? 'vez' : 'veces'}</span>
+        </div>
+        <div class="usage-bar-bg">
+          <div class="usage-bar-fill" style="width: ${pct}%;"></div>
+        </div>
+      `;
+      charsContainer.appendChild(li);
+    });
+  }
+
+  // Render Tournament history table
+  const tbody = document.querySelector("#det-player-history-table tbody");
+  tbody.innerHTML = "";
+  if (stats.tournamentHistory.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center padding-md description-small">No hay registros de participación</td></tr>`;
+  } else {
+    stats.tournamentHistory.forEach(h => {
+      const tr = document.createElement("tr");
+
+      let resultText = "-";
+      if (h.rank !== "-") {
+        let rankClass = "";
+        if (h.rank === 1) rankClass = "rank-gold";
+        else if (h.rank === 2) rankClass = "rank-silver";
+        else if (h.rank === 3) rankClass = "rank-bronze";
+        resultText = `<strong class="${rankClass}">${h.rank}º Lugar</strong>`;
+      }
+
+      tr.innerHTML = `
+        <td><strong>${h.name}</strong></td>
+        <td>${formatDate(h.date)}</td>
+        <td>${h.game}</td>
+        <td><span class="tag-mode" style="padding: 2px 6px; font-size: 0.8rem;">${h.mode}</span></td>
+        <td>${resultText}</td>
+        <td>
+          <button class="det-tour-jump-btn admin-copy-btn" data-tour-id="${h.id}" style="padding: 2px 6px; font-size: 0.8rem; cursor: pointer;">Ver Detalle</button>
+        </td>
+      `;
+
+      tr.querySelector(".det-tour-jump-btn").addEventListener("click", () => {
+        // Swap tab to tournaments
+        const tabTournaments = document.getElementById("tab-tournaments");
+        if (tabTournaments) {
+          tabTournaments.click();
+          
+          // Select the tournament button in the sidebar list
+          const tourBtn = document.querySelector(`.tournament-nav-btn[data-id="${h.id}"]`);
+          if (tourBtn) {
+            tourBtn.click();
+            // Scroll to button
+            tourBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+      });
+
+      tbody.appendChild(tr);
+    });
+  }
 }
