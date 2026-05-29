@@ -17,13 +17,13 @@ La aplicación utiliza tecnologías web estándar modernas sin dependencias exte
 
 *   **HTML5**: Estructura semántica completa.
 *   **CSS3**: Estilizado avanzado organizado mediante Cascade Layers (`@layer reset, base, layout, components, utilities`), uso del espacio de color `oklch()` de alta gama para contraste óptimo y un diseño visual con efectos de Glassmorphism (diseño elegante basado en tonos carbón y dorado).
-*   **JavaScript (ES6 Modules)**: Código desacoplado en módulos especializados para facilitar su mantenimiento:
-    *   `app.js`: Punto de entrada de la aplicación. Inicializa los módulos y arranca la carga asíncrona de datos en el evento `DOMContentLoaded`.
-    *   `state.js`: Gestiona el estado global de la aplicación y la descarga concurrente de los archivos JSON de datos.
-    *   `theme.js`: Sincroniza y alterna el tema de color entre modo claro, oscuro y el predeterminado del sistema.
-    *   `stats.js`: Motor de cálculos estadísticos (puntos de liga, métricas de victorias/derrotas, H2H y palmarés).
-    *   `ui.js`: Controla el enrutamiento de pestañas, el menú responsivo lateral y el renderizado dinámico de los datos en el DOM.
-    *   `admin.js`: Controla la interfaz y validaciones del formulario generador de JSON.
+*   **JavaScript (ES6 Modules)**: Código desacoplado en módulos especializados dentro de la carpeta `js/` para facilitar su mantenimiento:
+    *   `js/app.js`: Punto de entrada de la aplicación. Inicializa los módulos y arranca la carga asíncrona de datos en el evento `DOMContentLoaded`.
+    *   `js/state.js`: Gestiona el estado global de la aplicación y la descarga concurrente de los archivos JSON de datos.
+    *   `js/theme.js`: Sincroniza y alterna el tema de color entre modo claro, oscuro y el predeterminado del sistema.
+    *   `js/stats.js`: Motor de cálculos estadísticos (puntos de liga, métricas de victorias/derrotas, H2H y palmarés).
+    *   `js/ui.js`: Controla el enrutamiento de pestañas, el menú responsivo lateral y el renderizado dinámico de los datos en el DOM.
+    *   `js/admin.js`: Controla la interfaz y validaciones del formulario generador de JSON.
 
 ## Estructura de Datos (JSON)
 
