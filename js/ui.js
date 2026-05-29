@@ -1,6 +1,8 @@
 // User Interface Navigation and Rendering Module
 import { state } from './state.js';
-import { calculateStatistics, getH2HStats, getPalmaresMedals, formatDate } from './stats.js';
+import { calculateStatistics, getH2HStats, getPalmaresMedals, formatDate, getPlayerDetailedStats } from './stats.js';
+
+let currentViewingPlayer = null;
 
 // Sidebar & Tab Navigation
 export function setupNavigation() {
@@ -54,6 +56,8 @@ export function setupNavigation() {
         renderLeaderboard();
       } else if (targetId === "sec-palmares") {
         renderPalmares();
+      } else if (targetId === "sec-players") {
+        renderPlayersView();
       }
     });
   });
@@ -123,6 +127,24 @@ export function setupUIEventListeners() {
       sortLeaderboardTable(sortField, isAsc);
     });
   });
+
+  // Players search filter
+  const playersSearchInput = document.getElementById("input-search-players");
+  if (playersSearchInput) {
+    playersSearchInput.addEventListener("input", () => {
+      renderPlayersView();
+    });
+  }
+
+  // Player detailed view game filter
+  const playerGameSelect = document.getElementById("select-player-game");
+  if (playerGameSelect) {
+    playerGameSelect.addEventListener("change", () => {
+      if (currentViewingPlayer) {
+        showPlayerDetails(currentViewingPlayer);
+      }
+    });
+  }
 }
 
 // Populate Dropdowns in H2H
@@ -715,6 +737,196 @@ export function renderPalmares() {
         </div>
       `;
       timelineContainer.appendChild(item);
+    });
+  }
+}
+
+// RENDER: PLAYERS (LIST VIEW)
+export function renderPlayersView() {
+  const navContainer = document.getElementById("list-players-nav");
+  if (!navContainer) return;
+
+  const filterText = document.getElementById("input-search-players")?.value.trim().toLowerCase() || "";
+  navContainer.innerHTML = "";
+
+  const players = Object.keys(state.playersStats).sort();
+  const filteredPlayers = players.filter(p => p.toLowerCase().includes(filterText));
+
+  if (filteredPlayers.length === 0) {
+    navContainer.innerHTML = `<p class="text-center padding-md description-small">No se encontraron participantes.</p>`;
+    return;
+  }
+
+  filteredPlayers.forEach(name => {
+    const btn = document.createElement("button");
+    btn.className = "player-nav-btn";
+    btn.setAttribute("data-player-id", name);
+
+    // Get current active player ID to maintain highlighting
+    if (currentViewingPlayer === name) {
+      btn.classList.add("active");
+    }
+
+    const stats = state.playersStats[name];
+    const recordText = stats ? `${stats.wins}-${stats.losses}` : "0-0";
+
+    btn.innerHTML = `
+      <span class="tour-nav-name">${name}</span>
+      <span class="player-nav-record">Récord general: ${recordText}</span>
+    `;
+
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".player-nav-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      
+      showPlayerDetails(name);
+    });
+
+    navContainer.appendChild(btn);
+  });
+}
+
+// Populate games selection inside player profiles view
+export function populatePlayerGameFilter() {
+  const select = document.getElementById("select-player-game");
+  if (!select) return;
+
+  select.innerHTML = `<option value="all">Todos los juegos</option>`;
+  const uniqueGames = [...new Set(state.tournamentsDetails.map(t => t.game || "Dragon Ball FighterZ"))].sort();
+  uniqueGames.forEach(g => {
+    const opt = document.createElement("option");
+    opt.value = g;
+    opt.textContent = g;
+    select.appendChild(opt);
+  });
+}
+
+// RENDER: PLAYER DETAILS PROFILE
+export function showPlayerDetails(playerName) {
+  currentViewingPlayer = playerName;
+  
+  const placeholder = document.getElementById("player-detail-placeholder");
+  const content = document.getElementById("player-detail-content");
+  if (!placeholder || !content) return;
+
+  placeholder.hidden = true;
+  content.hidden = false;
+
+  const gameFilter = document.getElementById("select-player-game")?.value || "all";
+  const stats = getPlayerDetailedStats(playerName, gameFilter);
+
+  // Update headers
+  document.getElementById("det-player-name").textContent = stats.playerName;
+  document.getElementById("det-player-record").textContent = `${stats.wins} - ${stats.losses}`;
+
+  // Update counts
+  document.getElementById("det-player-winrate").textContent = `${stats.winrate.toFixed(1)}%`;
+  document.getElementById("det-player-played").textContent = stats.played;
+
+  // Retrieve league points for this game filter
+  const gameStats = calculateStatistics(gameFilter);
+  const points = gameStats[playerName]?.points || 0;
+  document.getElementById("det-player-points").textContent = points;
+
+  // Render podiun counts
+  document.getElementById("det-player-gold").textContent = stats.podiums.gold;
+  document.getElementById("det-player-silver").textContent = stats.podiums.silver;
+  document.getElementById("det-player-bronze").textContent = stats.podiums.bronze;
+
+  // Render Favorite Teams (character compositions)
+  const teamsContainer = document.getElementById("det-player-teams");
+  teamsContainer.innerHTML = "";
+  if (stats.teamsList.length === 0) {
+    teamsContainer.innerHTML = `<li class="text-center padding-md description-small">No hay combates registrados</li>`;
+  } else {
+    const maxCount = stats.teamsList[0].count;
+    stats.teamsList.slice(0, 5).forEach(t => {
+      const pct = maxCount > 0 ? (t.count / maxCount) * 100 : 0;
+      const li = document.createElement("li");
+      li.className = "usage-item";
+      li.innerHTML = `
+        <div class="usage-info">
+          <span class="usage-name">${t.name}</span>
+          <span class="usage-count">${t.count} ${t.count === 1 ? 'pelea' : 'peleas'}</span>
+        </div>
+        <div class="usage-bar-bg">
+          <div class="usage-bar-fill" style="width: ${pct}%;"></div>
+        </div>
+      `;
+      teamsContainer.appendChild(li);
+    });
+  }
+
+  // Render Favorite Characters (individual)
+  const charsContainer = document.getElementById("det-player-chars");
+  charsContainer.innerHTML = "";
+  if (stats.charsList.length === 0) {
+    charsContainer.innerHTML = `<li class="text-center padding-md description-small">No hay combates registrados</li>`;
+  } else {
+    const maxCount = stats.charsList[0].count;
+    stats.charsList.slice(0, 5).forEach(c => {
+      const pct = maxCount > 0 ? (c.count / maxCount) * 100 : 0;
+      const li = document.createElement("li");
+      li.className = "usage-item";
+      li.innerHTML = `
+        <div class="usage-info">
+          <span class="usage-name">${c.name}</span>
+          <span class="usage-count">${c.count} ${c.count === 1 ? 'vez' : 'veces'}</span>
+        </div>
+        <div class="usage-bar-bg">
+          <div class="usage-bar-fill" style="width: ${pct}%;"></div>
+        </div>
+      `;
+      charsContainer.appendChild(li);
+    });
+  }
+
+  // Render Tournament history table
+  const tbody = document.querySelector("#det-player-history-table tbody");
+  tbody.innerHTML = "";
+  if (stats.tournamentHistory.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center padding-md description-small">No hay registros de participación</td></tr>`;
+  } else {
+    stats.tournamentHistory.forEach(h => {
+      const tr = document.createElement("tr");
+
+      let resultText = "-";
+      if (h.rank !== "-") {
+        let rankClass = "";
+        if (h.rank === 1) rankClass = "rank-gold";
+        else if (h.rank === 2) rankClass = "rank-silver";
+        else if (h.rank === 3) rankClass = "rank-bronze";
+        resultText = `<strong class="${rankClass}">${h.rank}º Lugar</strong>`;
+      }
+
+      tr.innerHTML = `
+        <td><strong>${h.name}</strong></td>
+        <td>${formatDate(h.date)}</td>
+        <td>${h.game}</td>
+        <td><span class="tag-mode" style="padding: 2px 6px; font-size: 0.8rem;">${h.mode}</span></td>
+        <td>${resultText}</td>
+        <td>
+          <button class="det-tour-jump-btn admin-copy-btn" data-tour-id="${h.id}" style="padding: 2px 6px; font-size: 0.8rem; cursor: pointer;">Ver Detalle</button>
+        </td>
+      `;
+
+      tr.querySelector(".det-tour-jump-btn").addEventListener("click", () => {
+        // Swap tab to tournaments
+        const tabTournaments = document.getElementById("tab-tournaments");
+        if (tabTournaments) {
+          tabTournaments.click();
+          
+          // Select the tournament button in the sidebar list
+          const tourBtn = document.querySelector(`.tournament-nav-btn[data-id="${h.id}"]`);
+          if (tourBtn) {
+            tourBtn.click();
+            // Scroll to button
+            tourBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+      });
+
+      tbody.appendChild(tr);
     });
   }
 }

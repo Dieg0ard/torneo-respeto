@@ -180,3 +180,127 @@ export function formatDate(dateString) {
 
   return `${day} ${monthName} ${year}`;
 }
+
+// Calculate player detailed stats (boxing record, game filter, teams usage & history)
+export function getPlayerDetailedStats(playerName, gameFilter = "all") {
+  let wins = 0;
+  let losses = 0;
+  let played = 0;
+  
+  const podiums = { gold: 0, silver: 0, bronze: 0 };
+  const teamFrequencies = {};
+  const charFrequencies = {};
+  const tournamentHistory = [];
+
+  state.tournamentsDetails.forEach(tour => {
+    // Check game filter
+    const tourGame = tour.game || "Dragon Ball FighterZ";
+    if (gameFilter !== "all" && tourGame !== gameFilter) {
+      return;
+    }
+
+    // Check if player participated
+    const hasParticipated = tour.participants.includes(playerName);
+    if (!hasParticipated) {
+      return;
+    }
+
+    // Determine rank in standings (only 1º, 2º, and 3º are recognized)
+    let rank = "-";
+    if (tour.standings) {
+      const stand = tour.standings.find(s => s.player === playerName);
+      if (stand) {
+        const tourRank = stand.rank;
+        if (tourRank === 1) {
+          rank = 1;
+          podiums.gold++;
+        } else if (tourRank === 2) {
+          rank = 2;
+          podiums.silver++;
+        } else if (tourRank === 3) {
+          rank = 3;
+          podiums.bronze++;
+        }
+      }
+    }
+
+    // Add to history
+    tournamentHistory.push({
+      id: tour.id,
+      name: tour.name,
+      date: tour.date,
+      game: tourGame,
+      mode: tour.mode,
+      rank: rank
+    });
+
+    // Gather matches and count wins/losses and characters/teams
+    tour.matches.forEach(m => {
+      const isPlayerMatch = (m.p1 === playerName || m.p2 === playerName);
+      if (!isPlayerMatch) return;
+
+      played++;
+      let myScore, opponentScore, myChars;
+      if (m.p1 === playerName) {
+        myScore = m.score1;
+        opponentScore = m.score2;
+        myChars = m.chars1;
+      } else {
+        myScore = m.score2;
+        opponentScore = m.score1;
+        myChars = m.chars2;
+      }
+
+      if (myScore > opponentScore) {
+        wins++;
+      } else if (opponentScore > myScore) {
+        losses++;
+      }
+
+      // Process Team/Chars if they are defined
+      if (myChars && myChars !== "-") {
+        // Individual Characters count: split by comma, trim, count
+        const charsList = myChars.split(",").map(c => c.trim()).filter(Boolean);
+        charsList.forEach(char => {
+          charFrequencies[char] = (charFrequencies[char] || 0) + 1;
+        });
+
+        // Team count: split, trim, sort alphabetically, join with " / "
+        if (charsList.length > 0) {
+          const sortedTeam = [...charsList].sort().join(" / ");
+          teamFrequencies[sortedTeam] = (teamFrequencies[sortedTeam] || 0) + 1;
+        }
+      }
+    });
+  });
+
+  // Calculate Winrate
+  const winrate = played > 0 ? (wins / played) * 100 : 0;
+
+  // Format team frequencies to sorted list
+  const teamsList = Object.entries(teamFrequencies).map(([name, count]) => ({
+    name,
+    count
+  })).sort((a, b) => b.count - a.count);
+
+  // Format char frequencies to sorted list
+  const charsList = Object.entries(charFrequencies).map(([name, count]) => ({
+    name,
+    count
+  })).sort((a, b) => b.count - a.count);
+
+  // Sort history newest first
+  tournamentHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  return {
+    playerName,
+    wins,
+    losses,
+    winrate,
+    played,
+    podiums,
+    teamsList,
+    charsList,
+    tournamentHistory
+  };
+}

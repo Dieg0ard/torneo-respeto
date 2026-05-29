@@ -6,6 +6,7 @@ Este es un portal web estático y responsivo para el registro, visualización y 
 
 *   **Resumen**: Panel principal con métricas rápidas del torneo (total de ediciones, total de participantes, combates realizados, líder histórico) y desglose de la última edición.
 *   **Clasificación**: Tabla de posiciones acumulada con soporte para filtrado por juego (por defecto Dragon Ball FighterZ), barra de búsqueda de jugadores y ordenamiento dinámico por columnas.
+*   **Participantes**: Panel de perfil detallado para cada jugador. Muestra su récord de victorias-derrotas (récord estilo boxeo como W-L), tasa de victorias, partidos jugados, medallas de podio, frecuencia de uso de personajes individuales, combinaciones de equipos (composición exacta de la pelea) y su historial cronológico de torneos. Incluye filtros por juego y buscador de participantes.
 *   **Head-to-Head (H2H)**: Calculadora de enfrentamientos directos entre cualquier par de jugadores. Muestra el porcentaje de victorias, rounds ganados, personajes favoritos de cada uno y el historial completo de sus combates.
 *   **Torneos**: Selector lateral cronológico de ediciones con detalle del juego, fecha, modalidad, lista de participantes, podio de ganadores y el registro de combates por rondas.
 *   **Palmarés**: Salón de la fama que muestra a los jugadores ordenados por cantidad de podios obtenidos (1º, 2º y 3º lugar) y una línea de tiempo cronológica de campeones.

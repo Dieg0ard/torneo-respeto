@@ -9,7 +9,9 @@ import {
   populateH2HSelectors,
   populateGameFilters,
   renderOverview,
-  renderTournamentsView
+  renderTournamentsView,
+  populatePlayerGameFilter,
+  renderPlayersView
 } from './ui.js';
 
 // Application bootstrapping on document load
@@ -35,8 +37,10 @@ async function initializeApplicationData() {
     // Populate select fields and filters
     populateGameFilters();
     populateH2HSelectors();
+    populatePlayerGameFilter();
     
-    // Render dashboard overview and tournament menu lists
+    // Render players navigation, dashboard overview and tournament menu lists
+    renderPlayersView();
     renderOverview();
     renderTournamentsView();
     
