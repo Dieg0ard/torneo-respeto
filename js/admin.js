@@ -237,25 +237,28 @@ function generateTournamentJSON() {
   const selectedStandings = new Set();
   let standingsError = false;
 
-  standingsSelects.forEach(select => {
-    const rank = parseInt(select.getAttribute("data-rank"));
-    const player = select.value;
-    
-    if (!player) {
+standingsSelects.forEach(select => {
+  const rank = parseInt(select.getAttribute("data-rank"));
+  const player = select.value;
+
+  // 1º y 2º son obligatorios
+  if (!player) {
+    if (rank <= 2) {
       alert(`Por favor, selecciona al jugador para el ${rank}º puesto.`);
       standingsError = true;
-      return;
     }
+    return;
+  }
 
-    if (selectedStandings.has(player)) {
-      alert(`Jugador repetido en posiciones de podio: ${player}`);
-      standingsError = true;
-      return;
-    }
+  if (selectedStandings.has(player)) {
+    alert(`Jugador repetido en posiciones de podio: ${player}`);
+    standingsError = true;
+    return;
+  }
 
-    selectedStandings.add(player);
-    standings.push({ rank, player });
-  });
+  selectedStandings.add(player);
+  standings.push({ rank, player });
+});
 
   if (standingsError) return;
 

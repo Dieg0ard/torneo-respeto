@@ -60,10 +60,7 @@
     }
   ],
   "standings": [
-    {
-      "rank": null,
-      "player": "all"
-    },
+
     {
       "rank": 1,
       "player": "Oscar"
