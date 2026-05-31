@@ -1,0 +1,144 @@
+{
+  "id": "Torneo_01 30-05-2026",
+  "name": "Torneo del Respeto",
+  "date": "2026-05-30",
+  "mode": "Equipo Fijo",
+  "game": "Dragon Ball FighterZ",
+  "participants": [
+    "Pedro",
+    "Diego",
+    "Jordan",
+    "Justhin",
+    "Oscar",
+    "Mantilla",
+    "Jefferson"
+  ],
+  "matches": [
+    {
+      "round": "Ronda 1",
+      "p1": "Justhin",
+      "p2": "Oscar",
+      "score1": 2,
+      "score2": 0,
+      "chars1": "Gogeta Blue, Vegeto Blue, Gogeta SSJ4",
+      "chars2": "Goku Daima, Janemba, Vegeta Saijan"
+    },
+    {
+      "round": "Ronda 1",
+      "p1": "Mantilla",
+      "p2": "Jefferson",
+      "score1": 1,
+      "score2": 2,
+      "chars1": "Cooler, Androide 21(Lab), Piccolo",
+      "chars2": "Goku Black, Gogeta Blue, Goku UI"
+    },
+    {
+      "round": "Ronda 1",
+      "p1": "Pedro",
+      "p2": "Diego",
+      "score1": 2,
+      "score2": 0,
+      "chars1": "Cell, Gohan Adulto, Goku SSJ",
+      "chars2": "Gohan Adulto, Vegeto Blue, Broly (Super)"
+    },
+    {
+      "round": "Ronda 1 Perdedores",
+      "p1": "Oscar",
+      "p2": "Mantilla",
+      "score1": 2,
+      "score2": 0,
+      "chars1": "Goku SSJ, Vegeta Saijan, Janemba",
+      "chars2": "Piccolo, Androide 21(Lab), Cooler"
+    },
+    {
+      "round": "Ronda 2",
+      "p1": "Justhin",
+      "p2": "Jordan",
+      "score1": 2,
+      "score2": 0,
+      "chars1": "Gogeta Blue, Gogeta SSJ4, Vegeto Blue",
+      "chars2": "Androide 17, Vegeto Blue, Gogeta Blue"
+    },
+    {
+      "round": "Ronda 2",
+      "p1": "Pedro",
+      "p2": "Jefferson",
+      "score1": 2,
+      "score2": 0,
+      "chars1": "Cell, Gohan Adulto, Goku SSJ",
+      "chars2": "Janemba, Goku UI, Goku Black"
+    },
+    {
+      "round": "Ronda 2 Perdedores",
+      "p1": "Diego",
+      "p2": "Oscar",
+      "score1": 2,
+      "score2": 1,
+      "chars1": "Broly Super, Vegeto Blue, Gohan Adulto",
+      "chars2": "Vegeta Saijan, Janemba, Goku SSJ"
+    },
+    {
+      "round": "Ronda 2 Perdedores",
+      "p1": "Jordan",
+      "p2": "Jefferson",
+      "score1": 2,
+      "score2": 0,
+      "chars1": "Gogeta Blue, Vegeta Blue, Androide 17",
+      "chars2": "Goku Black, Zamasu, Gogeta SSJ4"
+    },
+    {
+      "round": "Semifinal",
+      "p1": "Pedro",
+      "p2": "Justhin",
+      "score1": 2,
+      "score2": 1,
+      "chars1": "Cell, Gohan Adulto, Goku SSJ",
+      "chars2": "Gogeta Blue, Vegeto Blue, Gogeta SSJ4"
+    },
+    {
+      "round": "Semifinal Perdedores",
+      "p1": "Diego",
+      "p2": "Jordan",
+      "score1": 2,
+      "score2": 1,
+      "chars1": "Broly Super, Vegeto Blue, Gohan Adulto",
+      "chars2": "Vegeto Blue, Gogeta Blue, Androide 17"
+    },
+    {
+      "round": "Final Perdedores",
+      "p1": "Diego",
+      "p2": "Justhin",
+      "score1": 0,
+      "score2": 2,
+      "chars1": "Broly Super, Gohan Adulto, Vegeto Blue",
+      "chars2": "Gogeta SSJ4, Vegeto Blue, Gogeta Blue"
+    },
+    {
+      "round": "Final",
+      "p1": "Justhin",
+      "p2": "Pedro",
+      "score1": 6,
+      "score2": 4,
+      "chars1": "Vegeto Blue, Gogeta Blue, Gogeta SSJ4",
+      "chars2": "Cell, Super Vegeta, Gohan Adulto"
+    }
+  ],
+  "standings": [
+    {
+      "rank": null,
+      "player": "all"
+    },
+    {
+      "rank": 1,
+      "player": "Pedro"
+    },
+    {
+      "rank": 2,
+      "player": "Justhin"
+    },
+    {
+      "rank": 3,
+      "player": "Diego"
+    }
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "id": "Torneo_02 30-05-2026",
+  "name": "Torneo del Respeto",
+  "date": "2026-05-31",
+  "mode": "Individual",
+  "game": "Dragon Ball BT4 (MOD)",
+  "participants": [
+    "Pedro",
+    "Justhin",
+    "Oscar",
+    "Diego",
+    "Jefferson",
+    "Milex"
+  ],
+  "matches": [
+    {
+      "round": "Ronda 1",
+      "p1": "Jefferson",
+      "p2": "Justhin",
+      "score1": 0,
+      "score2": 1,
+      "chars1": "Goku UI",
+      "chars2": "Gogeta SSJ4"
+    },
+    {
+      "round": "Ronda 1",
+      "p1": "Diego",
+      "p2": "Oscar",
+      "score1": 0,
+      "score2": 1,
+      "chars1": "Gohan Beast",
+      "chars2": "Arale"
+    },
+    {
+      "round": "Ronda 1",
+      "p1": "Milex",
+      "p2": "Jefferson",
+      "score1": 1,
+      "score2": 0,
+      "chars1": "Gohan Kid",
+      "chars2": "Goku SSJ4"
+    },
+    {
+      "round": "Ronda 2",
+      "p1": "Oscar",
+      "p2": "Justhin",
+      "score1": 1,
+      "score2": 0,
+      "chars1": "Videl",
+      "chars2": "Cell"
+    },
+    {
+      "round": "Final",
+      "p1": "Oscar",
+      "p2": "Milex",
+      "score1": 1,
+      "score2": 0,
+      "chars1": "Tao Pai Pai",
+      "chars2": "Trunks"
+    }
+  ],
+  "standings": [
+    {
+      "rank": null,
+      "player": "all"
+    },
+    {
+      "rank": 1,
+      "player": "Oscar"
+    },
+    {
+      "rank": 2,
+      "player": "Milex"
+    },
+    {
+      "rank": 3,
+      "player": "Justhin"
+    }
+  ]
+}
