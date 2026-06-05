@@ -1,7 +1,23 @@
 // Administrator Page Control Module (JSON Generator Form)
 import { state } from './state.js';
+import { generateBracketStructure, advanceBracketMatch } from './bracket.js';
 
 export function setupAdminControls() {
+  // Admin sub-tabs event listener
+  const adminTabBtns = document.querySelectorAll(".admin-tab-btn");
+  adminTabBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.getAttribute("data-admin-target");
+      
+      adminTabBtns.forEach(t => t.classList.remove("active"));
+      btn.classList.add("active");
+
+      document.querySelectorAll(".admin-tab-section").forEach(sec => {
+        sec.hidden = sec.id !== targetId;
+      });
+    });
+  });
+
   // Admin Tools: Add Participant
   const btnAddPlayer = document.getElementById("btn-admin-add-player");
   const playerInput = document.getElementById("admin-player-input");
@@ -23,7 +39,7 @@ export function setupAdminControls() {
     });
   }
 
-  // Admin Tools: Add Match
+  // Admin Tools: Add Match (Manual)
   const btnAddMatch = document.getElementById("btn-admin-add-match");
   if (btnAddMatch) {
     btnAddMatch.addEventListener("click", () => {
@@ -67,6 +83,10 @@ export function setupAdminControls() {
       document.getElementById("admin-match-char1").value = "";
       document.getElementById("admin-match-char2").value = "";
       
+      // Hide presets
+      document.getElementById("admin-match-char1-preset").style.display = "none";
+      document.getElementById("admin-match-char2-preset").style.display = "none";
+      
       renderAdminMatches();
     });
   }
@@ -104,6 +124,205 @@ export function setupAdminControls() {
       downloadAnchor.click();
       downloadAnchor.remove();
     });
+  }
+
+  // QoL: Character preset list triggers
+  const p1Select = document.getElementById("admin-match-p1");
+  const p2Select = document.getElementById("admin-match-p2");
+  const char1Preset = document.getElementById("admin-match-char1-preset");
+  const char2Preset = document.getElementById("admin-match-char2-preset");
+
+  if (p1Select && char1Preset) {
+    p1Select.addEventListener("change", () => {
+      updateCharacterPresetsForPlayer("admin-match-p1", "admin-match-char1-preset", "admin-match-char1");
+    });
+    char1Preset.addEventListener("change", () => {
+      document.getElementById("admin-match-char1").value = char1Preset.value;
+    });
+  }
+
+  if (p2Select && char2Preset) {
+    p2Select.addEventListener("change", () => {
+      updateCharacterPresetsForPlayer("admin-match-p2", "admin-match-char2-preset", "admin-match-char2");
+    });
+    char2Preset.addEventListener("change", () => {
+      document.getElementById("admin-match-char2").value = char2Preset.value;
+    });
+  }
+
+  // JSON Import triggers
+  const btnImportFileTrigger = document.getElementById("btn-admin-import-file-trigger");
+  const fileInput = document.getElementById("admin-import-file");
+  const btnImportPasteTrigger = document.getElementById("btn-admin-import-paste-trigger");
+  const pasteContainer = document.getElementById("admin-import-paste-container");
+  const btnPasteConfirm = document.getElementById("btn-admin-import-paste-confirm");
+
+  if (btnImportFileTrigger && fileInput) {
+    btnImportFileTrigger.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          loadTournamentIntoForm(parsed);
+        } catch (err) {
+          alert("Error al parsear el archivo JSON: " + err.message);
+        }
+      };
+      reader.readAsText(file);
+      fileInput.value = ""; // Reset file input
+    });
+  }
+
+  if (btnImportPasteTrigger && pasteContainer) {
+    btnImportPasteTrigger.addEventListener("click", () => {
+      const isHidden = pasteContainer.style.display === "none";
+      pasteContainer.style.display = isHidden ? "block" : "none";
+    });
+  }
+
+  if (btnPasteConfirm) {
+    btnPasteConfirm.addEventListener("click", () => {
+      const text = document.getElementById("admin-import-paste-area").value.trim();
+      if (!text) {
+        alert("El texto JSON está vacío.");
+        return;
+      }
+      try {
+        const parsed = JSON.parse(text);
+        loadTournamentIntoForm(parsed);
+      } catch (err) {
+        alert("Error de sintaxis JSON: " + err.message);
+      }
+    });
+  }
+
+  // Bracket triggers
+  const bracketTypeSelect = document.getElementById("admin-bracket-type");
+  const btnGenerateBracket = document.getElementById("btn-admin-generate-bracket");
+  
+  if (bracketTypeSelect && btnGenerateBracket) {
+    bracketTypeSelect.addEventListener("change", () => {
+      const type = bracketTypeSelect.value;
+      if (type === "none") {
+        btnGenerateBracket.style.display = "none";
+        document.getElementById("admin-bracket-container").style.display = "none";
+        state.adminBracket = null;
+      } else {
+        btnGenerateBracket.style.display = "block";
+      }
+    });
+
+    btnGenerateBracket.addEventListener("click", () => {
+      const type = bracketTypeSelect.value;
+      if (state.adminParticipants.length < 2) {
+        alert("Necesitas al menos 2 participantes agregados en la lista para generar un bracket.");
+        return;
+      }
+
+      const confirmReset = state.adminMatches.length === 0 || confirm("Generar un bracket borrará la lista actual de combates registrados en este formulario. ¿Deseas continuar?");
+      if (!confirmReset) return;
+
+      // Clear existing matches
+      state.adminMatches = [];
+      renderAdminMatches();
+
+      // Initialize bracket
+      state.adminBracket = generateBracketStructure(state.adminParticipants, type);
+      if (state.adminBracket) {
+        document.getElementById("admin-bracket-container").style.display = "block";
+        renderBracket();
+      }
+    });
+  }
+}
+
+// QoL helper: Populate preset select for previously used character combinations
+function updateCharacterPresetsForPlayer(playerSelectId, presetSelectId, textInputId) {
+  const player = document.getElementById(playerSelectId).value;
+  const presetSelect = document.getElementById(presetSelectId);
+  const textInput = document.getElementById(textInputId);
+
+  if (!presetSelect || !textInput) return;
+
+  if (!player) {
+    presetSelect.style.display = "none";
+    return;
+  }
+
+  // Collect unique characters used in registered matches
+  const uniqueChars = new Set();
+  state.adminMatches.forEach(m => {
+    if (m.p1 === player && m.chars1 && m.chars1 !== "-") uniqueChars.add(m.chars1);
+    if (m.p2 === player && m.chars2 && m.chars2 !== "-") uniqueChars.add(m.chars2);
+  });
+
+  if (uniqueChars.size === 0) {
+    presetSelect.style.display = "none";
+    return;
+  }
+
+  presetSelect.innerHTML = `<option value="" disabled selected>Personajes previos...</option>`;
+  uniqueChars.forEach(chars => {
+    const opt = document.createElement("option");
+    opt.value = chars;
+    opt.textContent = chars;
+    presetSelect.appendChild(opt);
+  });
+
+  presetSelect.style.display = "block";
+}
+
+// Load a parsed JSON object into the creator form
+function loadTournamentIntoForm(tour) {
+  try {
+    if (!tour.id || !tour.name || !tour.date || !tour.mode || !tour.game || !tour.participants) {
+      throw new Error("El JSON de entrada no tiene la estructura de torneo válida (campos ausentes).");
+    }
+
+    document.getElementById("admin-tour-id").value = tour.id;
+    document.getElementById("admin-tour-name").value = tour.name;
+    document.getElementById("admin-tour-date").value = tour.date;
+    document.getElementById("admin-tour-mode").value = tour.mode;
+    document.getElementById("admin-tour-game").value = tour.game;
+
+    state.adminParticipants = [...tour.participants];
+    state.adminMatches = [...(tour.matches || [])];
+
+    renderAdminParticipants();
+    updateAdminDropdowns();
+    renderAdminMatches();
+    renderAdminStandings();
+
+    // Restore standings podium selections (GF, SF, LF)
+    if (tour.standings) {
+      setTimeout(() => {
+        tour.standings.forEach(s => {
+          const select = document.querySelector(`#admin-standings-list .admin-standing-select[data-rank="${s.rank}"]`);
+          if (select) {
+            select.value = s.player;
+          }
+        });
+      }, 80);
+    }
+
+    alert(`¡Torneo "${tour.name}" cargado con éxito! Puedes modificar la información y re-generar el JSON.`);
+
+    // Reset paste interface
+    document.getElementById("admin-import-paste-container").style.display = "none";
+    document.getElementById("admin-import-paste-area").value = "";
+
+    // Reset bracket status since we are loading custom matches list
+    document.getElementById("admin-bracket-type").value = "none";
+    document.getElementById("btn-admin-generate-bracket").style.display = "none";
+    document.getElementById("admin-bracket-container").style.display = "none";
+    state.adminBracket = null;
+
+  } catch (err) {
+    alert("Error al cargar la información: " + err.message);
   }
 }
 
@@ -200,16 +419,278 @@ export function renderAdminStandings() {
       selectOptions += `<option value="${p}">${p}</option>`;
     });
 
-    const labels = ["1º (Campeón)", "2º (Subcampeón)", "3º Lugar"];
+    const labels = ["1º (Campeón)", "2º (Subcampeón)", "3º Lugar (Opcional)"];
 
     div.innerHTML = `
-      <span class="standing-rank-lbl" style="width: 125px; text-align: left;">${labels[i-1]}:</span>
+      <span class="standing-rank-lbl" style="width: 150px; text-align: left;">${labels[i-1]}:</span>
       <select class="admin-standing-select" data-rank="${i}">
         ${selectOptions}
       </select>
     `;
     
     container.appendChild(div);
+  }
+}
+
+// QoL helper: Retrieve preset character selections for a player name
+function getPlayerCharacterPresets(player) {
+  const uniqueChars = new Set();
+  state.adminMatches.forEach(m => {
+    if (m.p1 === player && m.chars1 && m.chars1 !== "-") uniqueChars.add(m.chars1);
+    if (m.p2 === player && m.chars2 && m.chars2 !== "-") uniqueChars.add(m.chars2);
+  });
+  return Array.from(uniqueChars);
+}
+
+// Render the visual rounds of the bracket
+function renderBracket() {
+  const roundsContainer = document.getElementById("admin-bracket-rounds");
+  if (!roundsContainer || !state.adminBracket) return;
+
+  roundsContainer.innerHTML = "";
+  const bracket = state.adminBracket;
+
+  bracket.rounds.forEach(round => {
+    const col = document.createElement("div");
+    col.className = "bracket-round-col";
+    
+    const title = document.createElement("div");
+    title.className = "bracket-round-title";
+    title.textContent = round.name;
+    col.appendChild(title);
+
+    round.matches.forEach(matchId => {
+      const match = bracket.matches[matchId];
+      if (!match) return;
+
+      const card = document.createElement("div");
+      card.className = "bracket-match-card";
+      
+      if (match.completed) {
+        card.className += " completed-match";
+      } else if (match.p1 && match.p2 && match.p1 !== "BYE" && match.p2 !== "BYE") {
+        card.className += " active-match";
+      }
+
+      if (match.isBye) {
+        card.className += " bye-match";
+      }
+
+      // Header
+      const header = document.createElement("div");
+      header.className = "bracket-match-header";
+      
+      let statusText = "Esperando...";
+      if (match.isBye) {
+        statusText = "BYE (Avance)";
+      } else if (match.completed) {
+        statusText = "Jugado";
+      } else if (match.p1 && match.p2) {
+        statusText = "Listo";
+      }
+
+      header.innerHTML = `
+        <span class="bracket-match-id">[${match.id}]</span>
+        <span>${statusText}</span>
+      `;
+      card.appendChild(header);
+
+      // Player 1
+      const p1Row = document.createElement("div");
+      p1Row.className = "bracket-player-row";
+      const p1NameClass = !match.p1 ? "placeholder-player" : (match.completed && match.score1 > match.score2 ? "winner-highlight" : "");
+      const p1Name = match.p1 || "Por definir...";
+      p1Row.innerHTML = `
+        <span class="bracket-player-name ${p1NameClass}">${p1Name}</span>
+        <input type="number" class="bracket-score-input" id="score-p1-${match.id}" value="${match.score1 !== null ? match.score1 : 0}" min="0" ${(!match.p1 || !match.p2 || match.completed || match.isBye) ? 'disabled' : ''}>
+      `;
+      card.appendChild(p1Row);
+
+      // Player 2
+      const p2Row = document.createElement("div");
+      p2Row.className = "bracket-player-row";
+      const p2NameClass = !match.p2 ? "placeholder-player" : (match.completed && match.score2 > match.score1 ? "winner-highlight" : "");
+      const p2Name = match.p2 || "Por definir...";
+      p2Row.innerHTML = `
+        <span class="bracket-player-name ${p2NameClass}">${p2Name}</span>
+        <input type="number" class="bracket-score-input" id="score-p2-${match.id}" value="${match.score2 !== null ? match.score2 : 0}" min="0" ${(!match.p1 || !match.p2 || match.completed || match.isBye) ? 'disabled' : ''}>
+      `;
+      card.appendChild(p2Row);
+
+      // Character entries
+      if (match.p1 && match.p2 && !match.isBye) {
+        const charInputs = document.createElement("div");
+        charInputs.style.display = "flex";
+        charInputs.style.flexDirection = "column";
+        charInputs.style.gap = "4px";
+        charInputs.style.marginTop = "4px";
+
+        // Generate P1 presets markup
+        const p1Presets = getPlayerCharacterPresets(match.p1);
+        let p1PresetSelectHTML = "";
+        if (p1Presets.length > 0 && !match.completed) {
+          p1PresetSelectHTML = `
+            <select class="admin-standing-select" id="preset-p1-${match.id}" style="margin-top: 2px; font-size: 0.8rem; padding: 2px 4px; width: 100%;">
+              <option value="" disabled selected>Personajes previos...</option>
+              ${p1Presets.map(chars => `<option value="${chars}">${chars}</option>`).join("")}
+            </select>
+          `;
+        }
+
+        // Generate P2 presets markup
+        const p2Presets = getPlayerCharacterPresets(match.p2);
+        let p2PresetSelectHTML = "";
+        if (p2Presets.length > 0 && !match.completed) {
+          p2PresetSelectHTML = `
+            <select class="admin-standing-select" id="preset-p2-${match.id}" style="margin-top: 2px; font-size: 0.8rem; padding: 2px 4px; width: 100%;">
+              <option value="" disabled selected>Personajes previos...</option>
+              ${p2Presets.map(chars => `<option value="${chars}">${chars}</option>`).join("")}
+            </select>
+          `;
+        }
+
+        charInputs.innerHTML = `
+          <div style="display: flex; flex-direction: column;">
+            <input type="text" class="bracket-chars-input" id="chars-p1-${match.id}" placeholder="Personajes de ${match.p1}" value="${match.chars1 || ''}" ${match.completed ? 'disabled' : ''}>
+            ${p1PresetSelectHTML}
+          </div>
+          <div style="display: flex; flex-direction: column; margin-top: 4px;">
+            <input type="text" class="bracket-chars-input" id="chars-p2-${match.id}" placeholder="Personajes de ${match.p2}" value="${match.chars2 || ''}" ${match.completed ? 'disabled' : ''}>
+            ${p2PresetSelectHTML}
+          </div>
+        `;
+        card.appendChild(charInputs);
+
+        // Bind preset selection listeners
+        if (p1Presets.length > 0 && !match.completed) {
+          const selectEl = charInputs.querySelector(`#preset-p1-${match.id}`);
+          if (selectEl) {
+            selectEl.addEventListener("change", () => {
+              const inputEl = charInputs.querySelector(`#chars-p1-${match.id}`);
+              if (inputEl) inputEl.value = selectEl.value;
+            });
+          }
+        }
+
+        if (p2Presets.length > 0 && !match.completed) {
+          const selectEl = charInputs.querySelector(`#preset-p2-${match.id}`);
+          if (selectEl) {
+            selectEl.addEventListener("change", () => {
+              const inputEl = charInputs.querySelector(`#chars-p2-${match.id}`);
+              if (inputEl) inputEl.value = selectEl.value;
+            });
+          }
+        }
+      }
+
+      // Actions
+      if (match.p1 && match.p2 && !match.isBye) {
+        const actions = document.createElement("div");
+        actions.className = "bracket-actions";
+
+        if (!match.completed) {
+          actions.innerHTML = `<button type="button" class="btn-action" style="font-size: 0.8rem; padding: 2px 8px; min-height: auto; height: 26px;" id="btn-save-match-${match.id}">Confirmar</button>`;
+          card.appendChild(actions);
+
+          actions.querySelector("button").addEventListener("click", () => {
+            const s1 = parseInt(document.getElementById(`score-p1-${match.id}`).value) || 0;
+            const s2 = parseInt(document.getElementById(`score-p2-${match.id}`).value) || 0;
+            const c1 = document.getElementById(`chars-p1-${match.id}`).value.trim();
+            const c2 = document.getElementById(`chars-p2-${match.id}`).value.trim();
+
+            if (s1 === s2) {
+              alert("Los combates en un bracket no pueden terminar en empate.");
+              return;
+            }
+
+            const tourMatch = advanceBracketMatch(bracket, match.id, s1, s2, c1, c2);
+            if (tourMatch) {
+              const existingIdx = state.adminMatches.findIndex(m => m.round === tourMatch.round && m.p1 === tourMatch.p1 && m.p2 === tourMatch.p2);
+              if (existingIdx >= 0) {
+                state.adminMatches[existingIdx] = tourMatch;
+              } else {
+                state.adminMatches.push(tourMatch);
+              }
+
+              renderAdminMatches();
+              renderBracket();
+              checkBracketCompletionAndFillPodium();
+            }
+          });
+        } else {
+          actions.innerHTML = `<button type="button" class="btn-secondary" style="font-size: 0.8rem; padding: 2px 8px; min-height: auto; height: 26px;" id="btn-edit-match-${match.id}">Editar</button>`;
+          card.appendChild(actions);
+
+          actions.querySelector("button").addEventListener("click", () => {
+            match.completed = false;
+            // Remove from registered list
+            state.adminMatches = state.adminMatches.filter(m => !(m.round === match.round && m.p1 === match.p1 && m.p2 === match.p2));
+            renderAdminMatches();
+            renderBracket();
+            checkBracketCompletionAndFillPodium();
+          });
+        }
+      }
+
+      col.appendChild(card);
+    });
+
+    roundsContainer.appendChild(col);
+  });
+}
+
+// Automatically check if the bracket is finished and populate the podium selections
+function checkBracketCompletionAndFillPodium() {
+  const bracket = state.adminBracket;
+  if (!bracket) return;
+
+  let finalMatchId = "";
+  if (bracket.type === "single") {
+    if (bracket.size === 4) finalMatchId = "W3";
+    else if (bracket.size === 8) finalMatchId = "W7";
+    else if (bracket.size === 16) finalMatchId = "W15";
+  } else if (bracket.type === "double") {
+    finalMatchId = bracket.matches["GF2"] ? "GF2" : "GF1";
+  }
+
+  const finalMatch = bracket.matches[finalMatchId];
+  if (!finalMatch || !finalMatch.completed) return;
+
+  let champion = "";
+  let runnerUp = "";
+
+  if (finalMatch.score1 > finalMatch.score2) {
+    champion = finalMatch.p1;
+    runnerUp = finalMatch.p2;
+  } else {
+    champion = finalMatch.p2;
+    runnerUp = finalMatch.p1;
+  }
+
+  const select1 = document.querySelector(`#admin-standings-list .admin-standing-select[data-rank="1"]`);
+  const select2 = document.querySelector(`#admin-standings-list .admin-standing-select[data-rank="2"]`);
+
+  if (select1) select1.value = champion;
+  if (select2) select2.value = runnerUp;
+
+  if (bracket.type === "double") {
+    let losersFinalId = "";
+    if (bracket.size === 4) losersFinalId = "L2";
+    else if (bracket.size === 8) losersFinalId = "L6";
+    else if (bracket.size === 16) losersFinalId = "L14";
+
+    const losersFinal = bracket.matches[losersFinalId];
+    if (losersFinal && losersFinal.completed) {
+      let thirdPlace = "";
+      if (losersFinal.score1 > losersFinal.score2) {
+        thirdPlace = losersFinal.p2;
+      } else {
+        thirdPlace = losersFinal.p1;
+      }
+
+      const select3 = document.querySelector(`#admin-standings-list .admin-standing-select[data-rank="3"]`);
+      if (select3) select3.value = thirdPlace;
+    }
   }
 }
 
@@ -232,33 +713,34 @@ function generateTournamentJSON() {
   }
 
   // Parse standings
-  const standingsSelects = document.querySelectorAll(".admin-standing-select");
+  const standingsSelects = document.querySelectorAll("#admin-standings-list .admin-standing-select");
   const standings = [];
   const selectedStandings = new Set();
   let standingsError = false;
 
-standingsSelects.forEach(select => {
-  const rank = parseInt(select.getAttribute("data-rank"));
-  const player = select.value;
-
-  // 1º y 2º son obligatorios
-  if (!player) {
-    if (rank <= 2) {
+  standingsSelects.forEach(select => {
+    const rank = parseInt(select.getAttribute("data-rank"));
+    const player = select.value;
+    
+    if (!player) {
+      // 3rd place is optional
+      if (rank === 3) {
+        return;
+      }
       alert(`Por favor, selecciona al jugador para el ${rank}º puesto.`);
       standingsError = true;
+      return;
     }
-    return;
-  }
 
-  if (selectedStandings.has(player)) {
-    alert(`Jugador repetido en posiciones de podio: ${player}`);
-    standingsError = true;
-    return;
-  }
+    if (selectedStandings.has(player)) {
+      alert(`Jugador repetido en posiciones de podio: ${player}`);
+      standingsError = true;
+      return;
+    }
 
-  selectedStandings.add(player);
-  standings.push({ rank, player });
-});
+    selectedStandings.add(player);
+    standings.push({ rank, player });
+  });
 
   if (standingsError) return;
 

@@ -708,7 +708,7 @@ export function renderPalmares() {
       
       let champ = "Desconocido";
       let runnerUp = "Desconocido";
-      let third = "Desconocido";
+      let third = "-";
 
       if (tour.standings) {
         const s1 = tour.standings.find(s => s.rank === 1);
@@ -842,11 +842,12 @@ export function showPlayerDetails(playerName) {
     const maxCount = stats.teamsList[0].count;
     stats.teamsList.slice(0, 5).forEach(t => {
       const pct = maxCount > 0 ? (t.count / maxCount) * 100 : 0;
+      const gamesLabel = t.games && t.games.length > 0 ? t.games.join(", ") : "-";
       const li = document.createElement("li");
       li.className = "usage-item";
       li.innerHTML = `
         <div class="usage-info">
-          <span class="usage-name">${t.name}</span>
+          <span class="usage-name">${t.name} <em style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; display: block; margin-top: 2px;">Juego: ${gamesLabel}</em></span>
           <span class="usage-count">${t.count} ${t.count === 1 ? 'pelea' : 'peleas'}</span>
         </div>
         <div class="usage-bar-bg">
@@ -866,11 +867,12 @@ export function showPlayerDetails(playerName) {
     const maxCount = stats.charsList[0].count;
     stats.charsList.slice(0, 5).forEach(c => {
       const pct = maxCount > 0 ? (c.count / maxCount) * 100 : 0;
+      const gamesLabel = c.games && c.games.length > 0 ? c.games.join(", ") : "-";
       const li = document.createElement("li");
       li.className = "usage-item";
       li.innerHTML = `
         <div class="usage-info">
-          <span class="usage-name">${c.name}</span>
+          <span class="usage-name">${c.name} <em style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal; display: block; margin-top: 2px;">Juego: ${gamesLabel}</em></span>
           <span class="usage-count">${c.count} ${c.count === 1 ? 'vez' : 'veces'}</span>
         </div>
         <div class="usage-bar-bg">
@@ -928,5 +930,34 @@ export function showPlayerDetails(playerName) {
 
       tbody.appendChild(tr);
     });
+  }
+
+  // Render Matches history table
+  const matchesTbody = document.querySelector("#det-player-matches-table tbody");
+  if (matchesTbody) {
+    matchesTbody.innerHTML = "";
+    if (stats.playerMatches.length === 0) {
+      matchesTbody.innerHTML = `<tr><td colspan="8" class="text-center padding-md description-small">No hay combates registrados</td></tr>`;
+    } else {
+      stats.playerMatches.forEach(m => {
+        const tr = document.createElement("tr");
+
+        const outcomeBadge = m.isWin 
+          ? `<span class="match-result-badge win">Victoria</span>` 
+          : `<span class="match-result-badge loss">Derrota</span>`;
+
+        tr.innerHTML = `
+          <td>${outcomeBadge}</td>
+          <td><strong>${m.tournamentName}</strong></td>
+          <td>${m.game}</td>
+          <td>${m.round}</td>
+          <td><strong>${m.opponent}</strong></td>
+          <td>${m.myScore} - ${m.opponentScore}</td>
+          <td><span style="font-size: 0.85rem; color: var(--accent-color); font-family: monospace;">${m.myChars}</span></td>
+          <td><span style="font-size: 0.85rem; color: var(--text-muted); font-family: monospace;">${m.opponentChars}</span></td>
+        `;
+        matchesTbody.appendChild(tr);
+      });
+    }
   }
 }

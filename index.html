@@ -386,6 +386,29 @@
                   </div>
                 </div>
 
+                <div class="profile-block" style="margin-block-start: var(--spacing-lg);">
+                  <h3 class="section-subtitle" style="border-block-end: 1px solid var(--border-color); padding-block-end: 6px; margin-block-end: var(--spacing-sm);">Historial de Combates</h3>
+                  <div class="table-container">
+                    <table class="data-table" id="det-player-matches-table">
+                      <thead>
+                        <tr>
+                          <th>Resultado</th>
+                          <th>Torneo</th>
+                          <th>Juego</th>
+                          <th>Ronda</th>
+                          <th>Oponente</th>
+                          <th>Marcador</th>
+                          <th>Mis Personajes</th>
+                          <th>Sus Personajes</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <!-- Filled by JS -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
               </div>
             </div>
 
@@ -574,131 +597,190 @@
         
         <!-- SECTION: ADMINISTRATOR (JSON GENERATOR) -->
         <section class="tab-section" id="sec-admin" hidden>
-          <div class="layout-grid-2">
-            <!-- Generator Form -->
-            <div class="card glass">
-              <div class="card-header">
-                <h2>Generador de Torneos (Creador JSON)</h2>
-              </div>
-              <div class="card-body scrollable-card-body max-height-admin-form">
-                <form id="form-generate-tournament" onsubmit="return false;">
-                  
-                  <h3 class="form-section-title">1. Información del Torneo</h3>
-                  <div class="form-group">
-                    <label for="admin-tour-id">ID Único (ej: torneo_03)</label>
-                    <input type="text" id="admin-tour-id" required placeholder="torneo_03">
+          <div class="detail-tabs" style="margin-top: 0;">
+            <button class="admin-tab-btn active" data-admin-target="admin-sec-form">Formulario y Datos</button>
+            <button class="admin-tab-btn" data-admin-target="admin-sec-bracket">Bracket de Eliminación</button>
+          </div>
+
+          <div class="admin-tab-content">
+            <!-- Sub-tab 1: Form & Generated Code -->
+            <div class="admin-tab-section" id="admin-sec-form">
+              <div class="layout-grid-2">
+                <!-- Generator Form -->
+                <div class="card glass">
+                  <div class="card-header">
+                    <h2>Generador de Torneos (Creador JSON)</h2>
                   </div>
-                  <div class="form-group">
-                    <label for="admin-tour-name">Nombre del Torneo</label>
-                    <input type="text" id="admin-tour-name" required placeholder="Torneo Respeto #3">
-                  </div>
-                  <div class="form-group">
-                    <label for="admin-tour-date">Fecha</label>
-                    <input type="date" id="admin-tour-date" required>
-                  </div>
-                  <div class="form-group">
-                    <label for="admin-tour-mode">Modalidad</label>
-                    <!-- <select id="admin-tour-mode" required>
-                      <option value="Individual 1v1">Individual 1v1</option>
-                      <option value="Equipos Random">Equipos Random</option>
-                      <option value="Equipos Fijos">Equipos Fijos</option>
-                    </select> -->
-                    <input type="text" id="admin-tour-mode" required value="Equipos Fijos" placeholder="Equipos Fijos">
-                  </div>
-                  <div class="form-group">
-                    <label for="admin-tour-game">Juego</label>
-                    <input type="text" id="admin-tour-game" required value="Dragon Ball FighterZ" placeholder="Dragon Ball FighterZ">
-                  </div>
-                  
-                  <h3 class="form-section-title">2. Lista de Participantes</h3>
-                  <div class="form-row-add">
-                    <input type="text" id="admin-player-input" placeholder="Nombre del jugador">
-                    <button type="button" class="btn-action" id="btn-admin-add-player">Añadir</button>
-                  </div>
-                  <div class="participants-box">
-                    <label>Participantes añadidos:</label>
-                    <div class="participants-tags" id="admin-participants-list">
-                      <!-- Tags of players appear here -->
-                    </div>
-                  </div>
-                  
-                  <h3 class="form-section-title">3. Registrar Combates</h3>
-                  <div class="match-form-box">
-                    <div class="form-group">
-                      <label for="admin-match-round">Ronda (ej: Semifinal, Final, Cuartos)</label>
-                      <input type="text" id="admin-match-round" placeholder="Semifinal">
-                    </div>
-                    
-                    <div class="match-players-grid">
-                      <div class="player-fields">
-                        <label for="admin-match-p1">Jugador 1</label>
-                        <select id="admin-match-p1">
-                          <!-- Filled by added players -->
-                        </select>
-                        <input type="text" id="admin-match-char1" placeholder="Personaje(s) (ej: Ryu)">
-                        <input type="text" id="admin-match-team1" placeholder="Equipo (opcional)">
-                      </div>
-                      <div class="score-fields">
-                        <label>Marcador</label>
-                        <div class="score-inputs">
-                          <input type="number" id="admin-match-score1" min="0" value="0">
-                          <span>-</span>
-                          <input type="number" id="admin-match-score2" min="0" value="0">
+                  <div class="card-body scrollable-card-body max-height-admin-form">
+                    <form id="form-generate-tournament" onsubmit="return false;">
+                      
+                      <!-- Import existing tournament -->
+                      <div class="form-group" style="margin-bottom: var(--spacing-md); border-bottom: 1px dashed var(--border-color); padding-bottom: var(--spacing-md);">
+                        <label style="font-weight: 700; color: var(--accent-color);">¿Modificar Torneo Existente?</label>
+                        <p class="description-small" style="margin-top: 2px; margin-bottom: var(--spacing-xs);">Puedes cargar su archivo JSON o pegar el código para modificar sus datos.</p>
+                        <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-xs);">
+                          <input type="file" id="admin-import-file" accept=".json" style="display: none;">
+                          <button type="button" class="btn-secondary" id="btn-admin-import-file-trigger" style="font-size: 0.85rem; padding: 4px 8px; min-height: auto; height: 32px;">Subir archivo .json</button>
+                          <button type="button" class="btn-secondary" id="btn-admin-import-paste-trigger" style="font-size: 0.85rem; padding: 4px 8px; min-height: auto; height: 32px;">Pegar texto JSON</button>
+                        </div>
+                        <div id="admin-import-paste-container" style="display: none; margin-top: var(--spacing-sm);">
+                          <textarea id="admin-import-paste-area" style="width: 100%; box-sizing: border-box; height: 120px; font-family: monospace; font-size: 0.8rem; padding: var(--spacing-xs); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); background-color: var(--surface-color); color: var(--text-color);" placeholder="Pega el contenido del JSON del torneo aquí..."></textarea>
+                          <button type="button" class="btn-action margin-top-xs" id="btn-admin-import-paste-confirm" style="font-size: 0.85rem; padding: 4px 8px; min-height: auto; height: 32px;">Cargar JSON Pegado</button>
                         </div>
                       </div>
-                      <div class="player-fields">
-                        <label for="admin-match-p2">Jugador 2</label>
-                        <select id="admin-match-p2">
-                          <!-- Filled by added players -->
-                        </select>
-                        <input type="text" id="admin-match-char2" placeholder="Personaje(s) (ej: Ken)">
-                        <input type="text" id="admin-match-team2" placeholder="Equipo (opcional)">
+
+                      <h3 class="form-section-title">1. Información del Torneo</h3>
+                      <div class="form-group">
+                        <label for="admin-tour-id">ID Único (ej: torneo_03)</label>
+                        <input type="text" id="admin-tour-id" required placeholder="torneo_03">
                       </div>
-                    </div>
-                    
-                    <button type="button" class="btn-secondary margin-top-sm" id="btn-admin-add-match">Añadir Combate</button>
+                      <div class="form-group">
+                        <label for="admin-tour-name">Nombre del Torneo</label>
+                        <input type="text" id="admin-tour-name" required placeholder="Torneo Respeto #3">
+                      </div>
+                      <div class="form-group">
+                        <label for="admin-tour-date">Fecha</label>
+                        <input type="date" id="admin-tour-date" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="admin-tour-mode">Modalidad</label>
+                        <input type="text" id="admin-tour-mode" required value="Equipos Fijos" placeholder="Equipos Fijos">
+                      </div>
+                      <div class="form-group">
+                        <label for="admin-tour-game">Juego</label>
+                        <input type="text" id="admin-tour-game" required value="Dragon Ball FighterZ" placeholder="Dragon Ball FighterZ">
+                      </div>
+                      
+                      <h3 class="form-section-title">2. Lista de Participantes</h3>
+                      <div class="form-row-add">
+                        <input type="text" id="admin-player-input" placeholder="Nombre del jugador">
+                        <button type="button" class="btn-action" id="btn-admin-add-player">Añadir</button>
+                      </div>
+                      <div class="participants-box">
+                        <label>Participantes añadidos:</label>
+                        <div class="participants-tags" id="admin-participants-list">
+                          <!-- Tags of players appear here -->
+                        </div>
+                      </div>
+                      
+                      <h3 class="form-section-title">3. Registrar Combates</h3>
+                      <div class="match-form-box">
+                        <div class="form-group">
+                          <label for="admin-match-round">Ronda (ej: Semifinal, Final, Cuartos)</label>
+                          <input type="text" id="admin-match-round" placeholder="Semifinal">
+                        </div>
+                        
+                        <div class="match-players-grid">
+                          <div class="player-fields">
+                            <label for="admin-match-p1">Jugador 1</label>
+                            <select id="admin-match-p1">
+                              <!-- Filled by added players -->
+                            </select>
+                             <input type="text" id="admin-match-char1" placeholder="Personaje(s) (ej: Ryu)">
+                             <select id="admin-match-char1-preset" class="admin-standing-select" style="display: none; margin-top: 4px; font-size: 0.8rem; padding: 2px 4px; width: 100%;">
+                               <option value="" disabled selected>Personajes previos...</option>
+                             </select>
+                             <input type="text" id="admin-match-team1" placeholder="Equipo (opcional)">
+                          </div>
+                          <div class="score-fields">
+                            <label>Marcador</label>
+                            <div class="score-inputs">
+                              <input type="number" id="admin-match-score1" min="0" value="0">
+                              <span>-</span>
+                              <input type="number" id="admin-match-score2" min="0" value="0">
+                            </div>
+                          </div>
+                          <div class="player-fields">
+                            <label for="admin-match-p2">Jugador 2</label>
+                            <select id="admin-match-p2">
+                              <!-- Filled by added players -->
+                            </select>
+                             <input type="text" id="admin-match-char2" placeholder="Personaje(s) (ej: Ken)">
+                             <select id="admin-match-char2-preset" class="admin-standing-select" style="display: none; margin-top: 4px; font-size: 0.8rem; padding: 2px 4px; width: 100%;">
+                               <option value="" disabled selected>Personajes previos...</option>
+                             </select>
+                             <input type="text" id="admin-match-team2" placeholder="Equipo (opcional)">
+                          </div>
+                        </div>
+                        
+                        <button type="button" class="btn-secondary margin-top-sm" id="btn-admin-add-match">Añadir Combate</button>
+                      </div>
+                      
+                      <div class="added-matches-container">
+                        <label>Combates Registrados:</label>
+                        <ul class="admin-matches-list" id="admin-matches-list">
+                          <!-- Matches shown here with delete button -->
+                        </ul>
+                      </div>
+                      
+                      <h3 class="form-section-title">4. Podio / Posiciones Finales</h3>
+                      <p class="description-small">El orden en la lista determinará la posición final. El primero será 1º (Campeón), el segundo 2º, etc.</p>
+                      <div class="standings-ordering-list" id="admin-standings-list">
+                        <!-- List of players that can be ordered -->
+                      </div>
+                      
+                      <button type="button" class="btn-primary margin-top-md w-full" id="btn-admin-generate">Generar JSON de Torneo</button>
+                    </form>
                   </div>
-                  
-                  <div class="added-matches-container">
-                    <label>Combates Registrados:</label>
-                    <ul class="admin-matches-list" id="admin-matches-list">
-                      <!-- Matches shown here with delete button -->
-                    </ul>
-                  </div>
-                  
-                  <h3 class="form-section-title">4. Podio / Posiciones Finales</h3>
-                  <p class="description-small">El orden en la lista determinará la posición final. El primero será 1º (Campeón), el segundo 2º, etc.</p>
-                  <div class="standings-ordering-list" id="admin-standings-list">
-                    <!-- List of players that can be ordered -->
-                  </div>
-                  
-                  <button type="button" class="btn-primary margin-top-md w-full" id="btn-admin-generate">Generar JSON de Torneo</button>
-                </form>
-              </div>
-            </div>
-            
-            <!-- Result Code -->
-            <div class="card glass">
-              <div class="card-header">
-                <h2>Archivo JSON Generado</h2>
-              </div>
-              <div class="card-body flex-column-layout">
-                <p class="description">Guarda este archivo en tu servidor. Sigue las instrucciones de abajo.</p>
-                <textarea id="admin-json-output" class="json-code-box" readonly placeholder='El código JSON de tu torneo se mostrará aquí cuando hagas clic en "Generar JSON de Torneo"...'></textarea>
-                
-                <div class="admin-actions-bar">
-                  <button type="button" class="btn-action" id="btn-admin-download" disabled>Descargar Archivo .json</button>
-                  <button type="button" class="btn-secondary" id="btn-admin-copy" disabled>Copiar Código</button>
                 </div>
                 
-                <div class="instructions-box margin-top-md">
-                  <h4>Instrucciones para Añadir el Torneo:</h4>
-                  <ol>
-                    <li>Haz clic en **Descargar Archivo .json** o copia el contenido y crea un archivo llamado <code id="admin-inst-filename">torneo_x.json</code>.</li>
-                    <li>Guárdalo en la carpeta <code class="code-path">data/tournaments/</code> del proyecto.</li>
-                    <li>Abre el archivo <code class="code-path">data/tournaments.json</code> y añade la siguiente entrada al array:</li>
-                  </ol>
-                  <pre class="json-code-box-small" id="admin-registry-output">// Haz clic en "Generar" para ver la entrada...</pre>
+                <!-- Result Code -->
+                <div class="card glass">
+                  <div class="card-header">
+                    <h2>Archivo JSON Generado</h2>
+                  </div>
+                  <div class="card-body flex-column-layout">
+                    <p class="description">Guarda este archivo en tu servidor. Sigue las instrucciones de abajo.</p>
+                    <textarea id="admin-json-output" class="json-code-box" readonly placeholder='El código JSON de tu torneo se mostrará aquí cuando hagas clic en "Generar JSON de Torneo"...'></textarea>
+                    
+                    <div class="admin-actions-bar">
+                      <button type="button" class="btn-action" id="btn-admin-download" disabled>Descargar Archivo .json</button>
+                      <button type="button" class="btn-secondary" id="btn-admin-copy" disabled>Copiar Código</button>
+                    </div>
+                    
+                    <div class="instructions-box margin-top-md">
+                      <h4>Instrucciones para Añadir el Torneo:</h4>
+                      <ol>
+                        <li>Haz clic en **Descargar Archivo .json** o copia el contenido y crea un archivo llamado <code id="admin-inst-filename">torneo_x.json</code>.</li>
+                        <li>Guárdalo en la carpeta <code class="code-path">data/tournaments/</code> del proyecto.</li>
+                        <li>Abre el archivo <code class="code-path">data/tournaments.json</code> y añade la siguiente entrada al array:</li>
+                      </ol>
+                      <pre class="json-code-box-small" id="admin-registry-output">// Haz clic en "Generar" para ver la entrada...</pre>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sub-tab 2: Bracket Generator (Full Width!) -->
+            <div class="admin-tab-section" id="admin-sec-bracket" hidden>
+              <div class="card glass">
+                <div class="card-header">
+                  <h2>Gestor de Bracket del Torneo</h2>
+                </div>
+                <div class="card-body">
+                  <p class="description" style="margin-bottom: var(--spacing-md);">Genera la estructura de eliminación directa o doble para realizar el seguimiento del torneo y registrar automáticamente los combates.</p>
+                  
+                  <div class="match-form-box" style="margin-bottom: var(--spacing-lg); max-width: 500px;">
+                    <div class="form-group">
+                      <label for="admin-bracket-type" style="font-weight: 700;">Tipo de Bracket de Eliminación</label>
+                      <select id="admin-bracket-type" class="admin-standing-select" style="width: 100%;">
+                        <option value="none">Sin bracket (registrar combates manualmente)</option>
+                        <option value="single">Eliminación Directa (Single Elimination)</option>
+                        <option value="double">Doble Eliminación (Double Elimination)</option>
+                      </select>
+                    </div>
+                    <button type="button" class="btn-secondary margin-top-xs" id="btn-admin-generate-bracket" style="display: none; font-size: 0.85rem; padding: 4px 8px; min-height: auto; height: 32px;">Generar / Reiniciar Bracket</button>
+                  </div>
+
+                  <!-- Container for the visual bracket -->
+                  <div id="admin-bracket-container" style="display: none; margin-bottom: var(--spacing-lg); padding: var(--spacing-md); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); background-color: rgba(var(--text-color-rgb), 0.005);">
+                    <h4 style="margin-bottom: 2px; color: var(--accent-color); font-size: 0.95rem;">Estructura del Bracket</h4>
+                    <p class="description-small" style="margin-bottom: var(--spacing-md);">Registra personajes, puntuaciones y confirma resultados para avanzar a los ganadores en el bracket.</p>
+                    <div class="bracket-rounds-wrapper" id="admin-bracket-rounds">
+                      <!-- Rounds and matches will be rendered here -->
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

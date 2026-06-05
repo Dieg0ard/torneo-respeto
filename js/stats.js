@@ -191,6 +191,7 @@ export function getPlayerDetailedStats(playerName, gameFilter = "all") {
   const teamFrequencies = {};
   const charFrequencies = {};
   const tournamentHistory = [];
+  const playerMatches = [];
 
   state.tournamentsDetails.forEach(tour => {
     // Check game filter
@@ -240,35 +241,63 @@ export function getPlayerDetailedStats(playerName, gameFilter = "all") {
       if (!isPlayerMatch) return;
 
       played++;
-      let myScore, opponentScore, myChars;
+      let myScore, opponentScore, myChars, opponentChars, opponentName;
       if (m.p1 === playerName) {
         myScore = m.score1;
         opponentScore = m.score2;
         myChars = m.chars1;
+        opponentChars = m.chars2;
+        opponentName = m.p2;
       } else {
         myScore = m.score2;
         opponentScore = m.score1;
         myChars = m.chars2;
+        opponentChars = m.chars1;
+        opponentName = m.p1;
       }
 
+      let isWin = false;
       if (myScore > opponentScore) {
         wins++;
+        isWin = true;
       } else if (opponentScore > myScore) {
         losses++;
       }
+
+      playerMatches.push({
+        tournamentName: tour.name,
+        tournamentId: tour.id,
+        date: tour.date,
+        game: tourGame,
+        round: m.round,
+        opponent: opponentName,
+        myScore: myScore,
+        opponentScore: opponentScore,
+        myChars: myChars || "-",
+        opponentChars: opponentChars || "-",
+        isWin: isWin
+      });
 
       // Process Team/Chars if they are defined
       if (myChars && myChars !== "-") {
         // Individual Characters count: split by comma, trim, count
         const charsList = myChars.split(",").map(c => c.trim()).filter(Boolean);
         charsList.forEach(char => {
-          charFrequencies[char] = (charFrequencies[char] || 0) + 1;
+          if (!charFrequencies[char]) {
+            charFrequencies[char] = { count: 0, games: new Set() };
+          }
+          charFrequencies[char].count++;
+          charFrequencies[char].games.add(tourGame);
         });
 
         // Team count: split, trim, sort alphabetically, join with " / "
         if (charsList.length > 0) {
           const sortedTeam = [...charsList].sort().join(" / ");
-          teamFrequencies[sortedTeam] = (teamFrequencies[sortedTeam] || 0) + 1;
+          if (!teamFrequencies[sortedTeam]) {
+            teamFrequencies[sortedTeam] = { count: 0, games: new Set() };
+          }
+          teamFrequencies[sortedTeam].count++;
+          teamFrequencies[sortedTeam].games.add(tourGame);
         }
       }
     });
@@ -278,19 +307,24 @@ export function getPlayerDetailedStats(playerName, gameFilter = "all") {
   const winrate = played > 0 ? (wins / played) * 100 : 0;
 
   // Format team frequencies to sorted list
-  const teamsList = Object.entries(teamFrequencies).map(([name, count]) => ({
+  const teamsList = Object.entries(teamFrequencies).map(([name, info]) => ({
     name,
-    count
+    count: info.count,
+    games: Array.from(info.games)
   })).sort((a, b) => b.count - a.count);
 
   // Format char frequencies to sorted list
-  const charsList = Object.entries(charFrequencies).map(([name, count]) => ({
+  const charsList = Object.entries(charFrequencies).map(([name, info]) => ({
     name,
-    count
+    count: info.count,
+    games: Array.from(info.games)
   })).sort((a, b) => b.count - a.count);
 
   // Sort history newest first
   tournamentHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  // Sort matches newest first
+  playerMatches.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   return {
     playerName,
@@ -301,6 +335,7 @@ export function getPlayerDetailedStats(playerName, gameFilter = "all") {
     podiums,
     teamsList,
     charsList,
-    tournamentHistory
+    tournamentHistory,
+    playerMatches
   };
 }

@@ -7,7 +7,8 @@ export const state = {
   activeTab: "sec-overview",
   selectedTournamentId: null,
   adminParticipants: [],
-  adminMatches: []
+  adminMatches: [],
+  adminBracket: null
 };
 
 // Asynchronously fetch indices and detail files
