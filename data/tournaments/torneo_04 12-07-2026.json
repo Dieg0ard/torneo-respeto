@@ -1,0 +1,52 @@
+{
+  "id": "torneo_04",
+  "name": "Torneo del Respeto 4",
+  "date": "2026-07-13",
+  "mode": "Batallas Dobles",
+  "game": "Pokémon Champions",
+  "participants": [
+    "Kevin",
+    "Justhin",
+    "Pedro",
+    "Diego"
+  ],
+  "matches": [
+    {
+      "round": "Semifinales",
+      "p1": "Kevin",
+      "p2": "Diego",
+      "score1": 0,
+      "score2": 1,
+      "chars1": "TYRANITAR, GARCHOMP, CORVIKNIGHT, SNEASLER",
+      "chars2": "SWAMPERT, PELIPPER, ARCHALUDON, SABLEYE"
+    },
+    {
+      "round": "Semifinales",
+      "p1": "Justhin",
+      "p2": "Pedro",
+      "score1": 1,
+      "score2": 0,
+      "chars1": "Pelipper, Swampert, Basculegion, Sinistcha",
+      "chars2": "Sylveon, Tyranitar, Arcanine, Whismicott"
+    },
+    {
+      "round": "Final",
+      "p1": "Diego",
+      "p2": "Justhin",
+      "score1": 1,
+      "score2": 0,
+      "chars1": "SWAMPERT, PELIPPER, ARCHALUDON, Sinistcha",
+      "chars2": "Archaludon, Mawhile, Basculegion, Sinistcha"
+    }
+  ],
+  "standings": [
+    {
+      "rank": 1,
+      "player": "Diego"
+    },
+    {
+      "rank": 2,
+      "player": "Justhin"
+    }
+  ]
+}

@@ -1,0 +1,197 @@
+{
+  "id": "torneo_03",
+  "name": "Torneo del Respeto 3",
+  "date": "2026-07-12",
+  "mode": "Equipos Fijos",
+  "game": "Dragon Ball FighterZ",
+  "participants": [
+    "Pedro",
+    "Justhin",
+    "Oscar",
+    "Miguel",
+    "Diego",
+    "Jaider",
+    "Kevin",
+    "Jordan",
+    "Mantilla",
+    "Jeergal"
+  ],
+  "matches": [
+    {
+      "round": "Ganadores - Ronda 1",
+      "p1": "Miguel",
+      "p2": "Pedro",
+      "score1": 0,
+      "score2": 2,
+      "chars1": "Goku SSJ, Broly Super, Trunks",
+      "chars2": "Cell, Goku SSJ, Gohan Adulto"
+    },
+    {
+      "round": "Ganadores - Ronda 1",
+      "p1": "Oscar",
+      "p2": "Justhin",
+      "score1": 2,
+      "score2": 0,
+      "chars1": "Bills, Vegeta Scout, Goku SSJ4",
+      "chars2": "Gogeta SSJ4, Gogeta Blue, Androide 21 Lab"
+    },
+    {
+      "round": "Ganadores - Quarters",
+      "p1": "Jordan",
+      "p2": "Pedro",
+      "score1": 0,
+      "score2": 2,
+      "chars1": "Gogeta Blue, Vegeto Blue, Androide 17",
+      "chars2": "Cell, Goku SSJ, Gohan Adulto"
+    },
+    {
+      "round": "Ganadores - Quarters",
+      "p1": "Jaider",
+      "p2": "Diego",
+      "score1": 0,
+      "score2": 2,
+      "chars1": "Goku Blue, Trunks, Goku SSJ4",
+      "chars2": "Broly Super, Trunks, Vegeto Blue"
+    },
+    {
+      "round": "Ganadores - Quarters",
+      "p1": "Mantilla",
+      "p2": "Oscar",
+      "score1": 0,
+      "score2": 2,
+      "chars1": "Androide 21 Lab, Cooler, Vegeta Blue",
+      "chars2": "Vegeta Scout, Goku SSJ4, Bills"
+    },
+    {
+      "round": "Ganadores - Quarters",
+      "p1": "Jeergal",
+      "p2": "Kevin",
+      "score1": 2,
+      "score2": 1,
+      "chars1": "Gogeta Blue, Vegeto Blue, Goku Black",
+      "chars2": "Vegeta Scout, Janemba, Androide 17"
+    },
+    {
+      "round": "Perdedores - Ronda 2",
+      "p1": "Jaider",
+      "p2": "Miguel",
+      "score1": 2,
+      "score2": 0,
+      "chars1": "Bardock, Trunks, Bills",
+      "chars2": "Gogeta SSJ4, Broly Super, Goku UI"
+    },
+    {
+      "round": "Perdedores - Ronda 2",
+      "p1": "Kevin",
+      "p2": "Justhin",
+      "score1": 0,
+      "score2": 2,
+      "chars1": "Vegeta Scout, Janemba, Androide 17",
+      "chars2": "Gogeta SSJ4, Gogeta Blue, Androide 21"
+    },
+    {
+      "round": "Perdedores - Ronda 3",
+      "p1": "Jaider",
+      "p2": "Jordan",
+      "score1": 1,
+      "score2": 2,
+      "chars1": "Cooler, Trunks, Vegeta Scout",
+      "chars2": "Hit, Broly Super, Androide 17"
+    },
+    {
+      "round": "Ganadores - Semis",
+      "p1": "Pedro",
+      "p2": "Diego",
+      "score1": 2,
+      "score2": 0,
+      "chars1": "Cell, Goku SSJ, Gohan Adulto",
+      "chars2": "Broly Super, Trunks, Vegeto Blue"
+    },
+    {
+      "round": "Ganadores - Semis",
+      "p1": "Oscar",
+      "p2": "Jeergal",
+      "score1": 2,
+      "score2": 0,
+      "chars1": "Bills, Vegeta Scout, Goku SSJ4",
+      "chars2": "Gogeta Blue, Vegeto Blue, Goku Black"
+    },
+    {
+      "round": "Perdedores - Ronda 3",
+      "p1": "Justhin",
+      "p2": "Mantilla",
+      "score1": 2,
+      "score2": 0,
+      "chars1": "Gogeta SSJ4, Gogeta Blue, Androide 21 Lab",
+      "chars2": "Androide 21 Lab, Cooler, Vegeta Blue"
+    },
+    {
+      "round": "Perdedores - Ronda 4",
+      "p1": "Jeergal",
+      "p2": "Jordan",
+      "score1": 0,
+      "score2": 2,
+      "chars1": "Gogeta Blue, Vegeto Blue, Goku Black",
+      "chars2": "Vegeto Blue, Broly Super, Androide 17"
+    },
+    {
+      "round": "Perdedores - Ronda 4",
+      "p1": "Diego",
+      "p2": "Justhin",
+      "score1": 0,
+      "score2": 2,
+      "chars1": "Broly Super, Trunks, Gogeta Blue",
+      "chars2": "Gogeta SSJ4, Gogeta Blue, Androide 21 Lab"
+    },
+    {
+      "round": "Perdedores - Semis",
+      "p1": "Jordan",
+      "p2": "Justhin",
+      "score1": 0,
+      "score2": 2,
+      "chars1": "Vegeto Blue, Broly Super, Androide 17",
+      "chars2": "Gogeta SSJ4, Gogeta Blue, Goku UI"
+    },
+    {
+      "round": "Ganadores - Final",
+      "p1": "Pedro",
+      "p2": "Oscar",
+      "score1": 2,
+      "score2": 1,
+      "chars1": "Cell, Goku SSJ, Gohan Adulto",
+      "chars2": "Bills, Vegeta Scout, Goku SSJ4"
+    },
+    {
+      "round": "Perdedores - Final",
+      "p1": "Oscar",
+      "p2": "Justhin",
+      "score1": 2,
+      "score2": 1,
+      "chars1": "Bills, Vegeta Scout, Goku SSJ4",
+      "chars2": "Gogeta SSJ4, Gogeta Blue, Goku UI"
+    },
+    {
+      "round": "Gran Final",
+      "p1": "Pedro",
+      "p2": "Oscar",
+      "score1": 3,
+      "score2": 2,
+      "chars1": "Cell, Goku SSJ, Gohan Adulto",
+      "chars2": "Bills, Vegeta Scout, Goku SSJ4"
+    }
+  ],
+  "standings": [
+    {
+      "rank": 1,
+      "player": "Pedro"
+    },
+    {
+      "rank": 2,
+      "player": "Oscar"
+    },
+    {
+      "rank": 3,
+      "player": "Justhin"
+    }
+  ]
+}
