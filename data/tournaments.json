@@ -2,7 +2,7 @@
   {
   "id": "Torneo_01 30-05-2026",
   "filename": "Torneo_01 30-05-2026.json",
-  "name": "Torneo del Respeto",
+  "name": "Torneo del Respeto 1 - FighterZ",
   "date": "2026-05-30",
   "mode": "Equipo Fijo",
   "game": "Dragon Ball FighterZ"
@@ -10,8 +10,8 @@
   {
   "id": "Torneo_02 30-05-2026",
   "filename": "Torneo_02 30-05-2026.json",
-  "name": "Torneo del Respeto",
-  "date": "2026-05-31",
+  "name": "Torneo del Respeto 2 - BT4",
+  "date": "2026-05-30",
   "mode": "Individual",
   "game": "Dragon Ball BT4 (MOD)"
 },
@@ -19,7 +19,7 @@
 
   "id": "torneo_03",
   "filename": "torneo_03 12-07-2026.json",
-  "name": "Torneo del Respeto 3",
+  "name": "Torneo del Respeto 3 - FighterZ",
   "date": "2026-07-12",
   "mode": "Equipos Fijos",
   "game": "Dragon Ball FighterZ"
@@ -27,8 +27,8 @@
 {
   "id": "torneo_04",
   "filename": "torneo_04 12-07-2026.json",
-  "name": "Torneo del Respeto 4",
-  "date": "2026-07-13",
+  "name": "Torneo del Respeto 4 - Champions",
+  "date": "2026-07-12",
   "mode": "Batallas Dobles",
   "game": "Pokémon Champions"
 }
